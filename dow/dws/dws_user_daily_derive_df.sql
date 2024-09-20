@@ -52,7 +52,7 @@ on a.role_id = b.role_id
 ), 
 
 daily_cal as(
-select date, role_id, login_days, 
+select date, install_date, role_id, login_days, 
 money, money_rmb, 
 min(firstpay_ts) over(partition by role_id order by part_date rows between unbounded preceding and unbounded following) as firstpay_ts, 
 sum(money) over(partition by role_id order by part_date rows between unbounded preceding and current row) as money_ac, 
@@ -74,7 +74,7 @@ select date, role_id, login_days,
 (case when date(firstpay_ts) = date(part_date) then 1 else 0 end) as is_firstpay, 
 (case when money > 0 then 1 else 0 end) as is_pay, 
 (case when money_ac > 0 then 1 else 0 end) as is_paid, 
-money_ac, moneyrmb_ac,
+money_ac, moneyrmb_ac, webrmb_ac, 
 sincetimes_end, core_end, free_end, paid_end, 
 before_date, after_date, 
 part_date
