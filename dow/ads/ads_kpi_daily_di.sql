@@ -17,7 +17,7 @@ pay_count_daily bigint,
 money_rmb_daily decimal(36, 2),
 new_users_moneyrmb decimal(36, 2), 
 users_new_moneyrmb decimal(36, 2), 
-web_rmb_daily bigint, 
+web_rmb_daily decimal(36, 2), 
 web_rmb_users bigint, 
 moneyrmb_ac decimal(36, 2),
 newuser_ac bigint,
@@ -98,7 +98,7 @@ group by 1, 2, 3, 4, 5
 
 data_cube as
 (select distinct zone_id, channel, os, t.date from daily_info
-cross join unnest(sequence(date $start_date, current_date, interval '1' day)) as t(date)
+cross join unnest(sequence(date $start_date, date $end_date, interval '1' day)) as t(date)
 ),
 
 daily_info_cube as
