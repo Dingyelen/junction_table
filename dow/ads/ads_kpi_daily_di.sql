@@ -17,8 +17,10 @@ pay_count_daily bigint,
 money_rmb_daily decimal(36, 2),
 new_users_moneyrmb decimal(36, 2), 
 users_new_moneyrmb decimal(36, 2), 
+web_rmb_daily bigint, 
+web_rmb_users bigint, 
 moneyrmb_ac decimal(36, 2),
-new_users_ac bigint,
+newuser_ac bigint,
 part_date varchar
 )
 with(partitioned_by = array['part_date']);
@@ -70,7 +72,7 @@ left join hive.dow_jpnew_w.dws_user_daily_derive_df b
 on a.role_id = b.role_id and a.part_date = b.part_date
 left join hive.dow_jpnew_w.dws_user_info_di c
 on a.role_id = c.role_id
-where b.is_test is null
+where c.is_test is null
 ),
 
 daily_info as
@@ -95,8 +97,8 @@ group by 1, 2, 3, 4, 5
 ),
 
 data_cube as
-(select distinct zone_id, channel, os, date from daily_info
-cross join unnest(sequence($start_date, current_date, interval '1' day)) as t(date)
+(select distinct zone_id, channel, os, t.date from daily_info
+cross join unnest(sequence(date $start_date, current_date, interval '1' day)) as t(date)
 ),
 
 daily_info_cube as
@@ -121,7 +123,7 @@ online_time,
 pay_count_daily, money_rmb_daily, 
 new_users_moneyrmb, users_new_moneyrmb, 
 web_rmb_daily, web_rmb_users, moneyrmb_ac, newuser_ac, 
-part_date
+date_format(date, '%Y-%m-%d') as part_date
 from daily_info_cube
 ;
 ###
