@@ -7,6 +7,8 @@
 # 2. 模型版本现状与改动
 ## 2.1 现状
 - 目前 DWS 有 10 个表模型，包含了日活，小时活跃，用户属性，主题快照等内容。ADS 有 15 个表模型，包含了核心货币产销存、核心 KPI 指标、同期群指标等内容。
+## 2.2 改动
+pass
 
 # 3. 数据模型规划
 ## 3.1 DWS（Data Warehouse）
@@ -45,9 +47,9 @@
 |ads_user_retention_di|A类|dws_user_daily_di，dws_user_info_di|
 |ads_level_daily_di|B类|dws_user_daily_di，dws_user_info_di|
 |ads_kpi_server_df|B类|dws_server_daily_df|
-|ads_kpi_daily_hf|华清|dws_user_hourly_hi，dws_user_info_di|
-|ads_kpi_life_df|华清|dws_user_daily_di，dws_user_info_di|
 |ads_herostatus_upgrade_df|B类|独立|
+|ads_kpi_life_df|华清|dws_user_daily_di，dws_user_info_di|
+|ads_kpi_daily_hf|华清|dws_user_hourly_hi，dws_user_info_di|
 |ads_act_battle_df|C类|dws_user_daily_di,dws_user_daily2_di|
 |ads_act_daily_df|C类|dws_user_daily_di,dws_user_info_di|
 |ads_battle_herostatus_df|C类|独立|
