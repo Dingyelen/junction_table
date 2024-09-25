@@ -47,26 +47,30 @@ where b.is_test is null
 ), 
 
 data_cube as(
-select distinct date, part_date, role_id
+select distinct date, part_date, active_date, role_id, 
+date_diff('day', date, active_date) as retention_day
 from user_daily_join
+cross join unnest(sequence(date, date_add('day', 14, date), interval '1' day)) as t(active_date)
 ), 
 
-active_info as(
-select date, part_date, role_id, retention_day
-from data_cube
-cross join unnest(sequence(0, 30, 1)) as t(retention_day)
+data_cube_join as(
+select a.date, a.part_date, a.active_date, a.role_id, a.retention_day, 
+(case when b.role_id is not null then 1 else 0 end) as active_users
+from data_cube a
+left join user_daily_join b
+on a.role_id = b.role_id and a.active_date = b.date
 ), 
 
 dau_info as(
 select date, part_date, count(distinct role_id) as dau
-from data_cube
+from user_daily_join
 group by 1, 2
 ), 
 
 active_res as(
 select date, retention_day, 
-count(distinct role_id) as active_users
-from active_info
+sum(active_users) as active_users
+from data_cube_join
 group by 1, 2
 )
 

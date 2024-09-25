@@ -50,8 +50,8 @@ zone_id, alliance_id,
 'dow_jp' as app_id, 
 vip_level, level, rank_level, 
 reason, event_type, 
-free_num, paid_num, free_num + paid_num as core_num, 
-free_end, paid_end, free_end + paid_end as core_end
+coalesce(free_num, 0) as free_num, coalesce(paid_num, 0) as paid_num, 
+coalesce(free_end, 0) as free_end, coalesce(paid_end, 0) as paid_end
 from hive.dow_jpnew_r.dwd_gserver_corechange_live
 where part_date >= $start_date
 and part_date <= $end_date
@@ -65,11 +65,11 @@ zone_id, alliance_id, app_id,
 vip_level, level, rank_level, reason, 
 (case when event_type = 'gain' then free_num else null end) as free_gain, 
 (case when event_type = 'gain' then paid_num else null end) as paid_gain, 
-(case when event_type = 'gain' then core_num else null end) as core_gain, 
+(case when event_type = 'gain' then free_num + paid_num else null end) as core_gain, 
 (case when event_type = 'cost' then free_num else null end) as free_cost, 
 (case when event_type = 'cost' then paid_num else null end) as paid_cost, 
-(case when event_type = 'cost' then core_num else null end) as core_cost, 
-free_end, paid_end, core_end
+(case when event_type = 'cost' then free_num + paid_num else null end) as core_cost, 
+free_end, paid_end, free_end + paid_end as core_end
 from core_log_base
 ), 
 
@@ -85,7 +85,7 @@ sum(free_cost) as free_cost,
 sum(paid_cost) as paid_cost,
 sum(core_cost) as core_cost
 from core_log
-group by 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13
+group by 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12
 ), 
 
 daily_gserver_info as(
