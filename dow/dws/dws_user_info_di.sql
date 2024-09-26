@@ -17,7 +17,6 @@ adgroup varchar,
 campaign_id varchar,
 creative_id varchar,
 adgroup_id varchar,
-adtag varchar,
 adcost varchar,
 is_test bigint,
 install_ts timestamp(3),
@@ -59,7 +58,9 @@ online_time bigint
 )
 with(
 format = 'ORC',
-transactional = true
+transactional = true, 
+bucketed_by = array['role_id'], 
+bucket_count = 10
 );
 
 delete from hive.dow_jpnew_w.dws_user_info_di 
@@ -78,7 +79,7 @@ os, channel,
 ip, country, 
 network, campaign, creative, adgroup, 
 campaign_id, creative_id, adgroup_id, 
-adtag, adcost, is_test, 
+adcost, is_test, 
 install_ts, install_date, 
 lastlogin_ts, 
 firstpay_ts, firstpay_date, 
@@ -170,7 +171,6 @@ coalesce(b.zone_id, '') as zone_id, coalesce(b.alliance_id, '') as alliance_id, 
 coalesce(b.ip, '') as ip, coalesce(b.country, '') as country, 
 coalesce(b.network, '') as network, coalesce(b.campaign, '') as campaign, coalesce(b.creative, '') as creative, coalesce(b.adgroup, '') as adgroup, 
 coalesce(b.campaign_id, '') as campaign_id, coalesce(b.creative_id, '') as creative_id, coalesce(b.adgroup_id, '') as adgroup_id, 
-null as adtag, 
 null as adcost, 
 a.is_test, 
 a.install_ts, 

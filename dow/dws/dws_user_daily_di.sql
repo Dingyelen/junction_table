@@ -88,7 +88,7 @@ paid_gain, paid_cost, paid_end,
 is_test, part_date)
  
 with currency_rate as(
-select currency, currency_time, rate as exchange_rate
+select currency, currency_time, rate * 0.01 as exchange_rate
 from mysql_bi_r."gbsp-bi-bigdata".t_currency_rate
 where currency = 'JPY'
 ), 
@@ -101,7 +101,7 @@ channel, zone_id, alliance_id,
 'dow_jp' as app_id, 
 vip_level, level, rank_level, power, 
 pay_source, payment_itemid, a.currency, a.money, b.exchange_rate, 
-a.money * b.exchange_rate * 0.01 as money_rmb, 
+a.money * b.exchange_rate as money_rmb, 
 online_time, 
 row_number() over(partition by role_id, part_date, event_name order by event_time) as partevent_rn, 
 row_number() over(partition by role_id, part_date, event_name order by event_time desc) as partevent_descrn
