@@ -27,7 +27,7 @@ events, last_event,
 part_date)
 
 with currency_rate as(
-select currency, currency_time, rate as exchange_rate
+select currency, currency_time, rate * 0.01 as exchange_rate
 from mysql_bi_r."gbsp-bi-bigdata".t_currency_rate
 where currency = 'JPY'
 ), 
@@ -40,7 +40,7 @@ channel, zone_id, alliance_id,
 'dow_jp' as app_id, 
 vip_level, level, rank_level, power, 
 payment_itemid, a.currency, a.money, b.exchange_rate, 
-a.money * b.exchange_rate * 0.01 as money_rmb, 
+a.money * b.exchange_rate as money_rmb, 
 online_time
 from hive.dow_jpnew_r.dwd_merge_base_live a
 left join currency_rate b
@@ -65,7 +65,7 @@ role_id, app_id,
 zone_id, channel,
 sum(money) as money, 
 sum(money_rmb) as money_rmb, 
-sum(case when event_name='Payment' then 1 else null end) as pay_count,
+sum(case when event_name = 'Payment' then 1 else null end) as pay_count,
 array_agg(event_name order by event_time) as events,
 element_at(array_agg(event_name order by event_time), -1) as last_event
 from base_log

@@ -13,9 +13,11 @@ pass
 # 3. 数据模型规划
 ## 3.1 DWS（Data Warehouse）
 1. 必要性说明：
-  - A类：所有项目必须，通用看板依赖项
-  - B类：非必要，根据日常分析，或者非通用看板增加或者改写
-  - C类：不必要，单纯 DOW 独有内容
+
+- A类：所有项目必须，通用看板依赖项
+- B类：非必要，根据日常分析，或者非通用看板增加或者改写
+- C类：不必要，单纯 DOW 独有内容
+
 2. 根据自己更新频率调整表名
 3. 表血缘
 
@@ -23,62 +25,41 @@ pass
 |--------|--------|--------|--------|--------|--------|
 |dws_user_daily_di|A类|独立|part_date||
 |dws_user_info_di|A类|dws_user_daily_di||role_id * 10|
-|dws_user_daily_derive_df|A类|dws_user_daily_di、dws_user_info_di|||
-|dws_user_hourly_hi|A类|独立|||
-|dws_core_snapshot_di|A类|独立|||
-|dws_server_daily_df|B类|dws_user_daily_di|||
-|dws_summon_daily_di|B类|独立|||
+|dws_user_daily_derive_di|A类|dws_user_daily_di||part_date * 10|
+|dws_user_hourly_hi|A类|独立|part_date||
+|dws_core_snapshot_di|A类|独立|part_date||
+|dws_server_daily_df|B类|dws_user_daily_di|part_date||
+|dws_summon_daily_di|B类|独立|part_date||
 |dws_user_daily2_di|C类|dws_user_daily_di|||
 |dws_user_info_mi|C类|独立|||
 |dws_token_info_mf|C类|独立|||
 
 ## 3.2 复用修改
-### 3.2.1 dws_user_daily_di
+##### dws_user_daily_di
 1. schema
 2. app_id
 3. 货币汇率，注意元和分时的区别，currency_rate
 4. 核心货币过滤条件，core_log_base
 5. 代币逻辑改写，item_log_base
-## 3.1 特别备注
-1. dws_user_daily_di
-2. dws_user_info_di
-
-- money_rmb 包括 web_rmb
-- 汇率除 100 写道汇率表里
-- summon 指标加入 daily
-- 修改位置：
-  - 货币汇率
-  - 代币逻辑
-  - 核心货币选择条件
-  - 包体id
-
-2. 增加广告成本分摊表
-3. ad_tag 确认
-4. user_info 按 role_id 分 10 个桶
-5. dws_user_daily_derive_df 
-
-- 去掉 newuser_ac，ads 再写逻辑
-- 按照 user_info 增量更新
-- 按照 part_date 分桶
-- 改表名
-
-6. houly_hi:
-
-- 修改位置：
-  - 货币汇率
-  - 包体id
-  
-7. dws_server_daily_df:
-
-- 按 part_date 分区
-- 兼容 ads_kpi_daily_di 所有指标
-- 开服时间首日测试高于 30
-
-9. dws_summon_daily_di：
-
-- 按 part_date 分桶
-
-10. 恢复 dws_hero_snapshot_di，并且通过
+##### dws_user_info_di
+1. schema
+2. app_id
+##### dws_user_daily_derive_di
+1. schema
+2. app_id
+##### dws_user_hourly_hi
+1. schema
+2. app_id
+3. 货币汇率，注意元和分时的区别，currency_rate
+##### dws_core_snapshot_di
+1. schema
+2. app_id
+3. 核心货币过滤条件，core_log_base
+##### dws_server_daily_df
+1. schema
+##### dws_summon_daily_di
+1. schema
+2. 抽卡日志整理，summon_log
 
 
 ## 3.3 ADS（Analytical Data Store）

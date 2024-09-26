@@ -9,10 +9,11 @@ summon_continue bigint,
 summon_users bigint, 
 core_cost bigint, 
 retention_day bigint, 
-part_date varchar, 
-summon_id varchar
+summon_id varchar, 
+part_date varchar
 )
-with(partitioned_by = array['summon_id'],
+with(
+partitioned_by = array['part_date'],
 format = 'ORC',
 transactional = true
 );
@@ -43,9 +44,8 @@ where recruitid in (
 select distinct recruitid
 from hive.dow_jpnew_r.dwd_gserver_recruitcard_live
 where part_date >= $start_date
-and part_date <= $end_date
+and part_date <= $end_date)
 ), 
-
 
 summon_agg as(
 select date, part_date, summon_id, zone_id, 
