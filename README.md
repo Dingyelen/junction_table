@@ -21,18 +21,18 @@ pass
 2. 根据自己更新频率调整表名
 3. 表血缘
 
-|表名|必要性|依赖情况|分区|分桶|备注|
+|必要性|表名|依赖情况|分区|分桶|备注|
 |--------|--------|--------|--------|--------|--------|
-|dws_user_daily_di|A类|独立|part_date||
-|dws_user_info_di|A类|dws_user_daily_di||role_id * 10|
-|dws_user_daily_derive_di|A类|dws_user_daily_di||part_date * 10|
-|dws_user_hourly_hi|A类|独立|part_date||
-|dws_core_snapshot_di|A类|独立|part_date||
-|dws_server_daily_df|B类|dws_user_daily_di|part_date||
-|dws_summon_daily_di|B类|独立|part_date||
-|dws_user_daily2_di|C类|dws_user_daily_di|||
-|dws_user_info_mi|C类|独立|||
-|dws_token_info_mf|C类|独立|||
+|A类|dws_user_daily_di|独立|part_date||
+|A类|dws_user_info_di|dws_user_daily_di||role_id * 10|
+|A类|dws_user_daily_derive_di|dws_user_daily_di||part_date * 10|
+|A类|dws_user_hourly_hi|独立|part_date||
+|A类|dws_core_snapshot_di|独立|part_date||
+|B类|dws_server_daily_df|dws_user_daily_di|part_date||
+|B类|dws_summon_daily_di|独立||part_date * 10|
+|C类|dws_user_daily2_di|dws_user_daily_di|part_date||
+|C类|dws_user_info_mi|独立|part_month||
+|C类|dws_token_info_mf|独立|||
 
 ## 3.2 复用修改
 ##### dws_user_daily_di
@@ -65,23 +65,23 @@ pass
 ## 3.3 ADS（Analytical Data Store）
 1. 表血缘
 
-|表名|必要性|依赖情况|分区|分桶|
+|必要性|表名|依赖情况|分区|分桶|
 |--------|--------|--------|--------|--------|
-|ads_kpi_daily_di|A类|dws_user_daily_di，dws_user_info_di|||
-|ads_kpi_hourly_hi|A类|dws_user_hourly_hi，dws_user_info_di|||
-|ads_core_addreason_di|A类|dws_core_snapshot_di，dws_user_info_di|||
-|ads_core_costreason_di|A类|dws_core_snapshot_di，dws_user_info_di|||
-|ads_active_daily_di|A类|dws_user_daily_di，dws_user_info_di|||
-|ads_retention_daily_di|A类|dws_user_daily_di，dws_user_info_di|||
-|ads_user_retention_di|A类|dws_user_daily_di，dws_user_info_di|||
-|ads_level_daily_di|B类|dws_user_daily_di，dws_user_info_di|||
-|ads_kpi_server_df|B类|dws_server_daily_df|||
-|ads_hero_upgrade_df|B类|独立|||
-|ads_kpi_life_df|华清|dws_user_daily_di，dws_user_info_di|||
-|ads_kpi_daily_hf|华清|dws_user_hourly_hi，dws_user_info_di|||
-|ads_act_battle_df|C类|dws_user_daily_di,dws_user_daily2_di|||
-|ads_act_daily_df|C类|dws_user_daily_di,dws_user_info_di|||
-|ads_battle_herostatus_df|C类|独立|||
+|A类|ads_kpi_daily_di|dws_user_daily_di，dws_user_info_di|||
+|A类|ads_kpi_hourly_hi|dws_user_hourly_hi，dws_user_info_di|||
+|A类|ads_core_addreason_di|dws_core_snapshot_di，dws_user_info_di|||
+|A类|ads_core_costreason_di|dws_core_snapshot_di，dws_user_info_di|||
+|A类|ads_active_daily_di|dws_user_daily_di，dws_user_info_di|||
+|A类|ads_retention_daily_di|dws_user_daily_di，dws_user_info_di|||
+|A类|ads_user_retention_di|dws_user_daily_di，dws_user_info_di|||
+|B类|ads_level_daily_di|dws_user_daily_di，dws_user_info_di|||
+|B类|ads_kpi_server_df|dws_server_daily_df|||
+|B类|ads_hero_upgrade_df|独立|||
+|华清|ads_kpi_life_df|dws_user_daily_di，dws_user_info_di|||
+|华清|ads_kpi_daily_hf|dws_user_hourly_hi，dws_user_info_di|||
+|C类|ads_act_battle_df|dws_user_daily_di,dws_user_daily2_di|||
+|C类|ads_act_daily_df|dws_user_daily_di,dws_user_info_di|||
+|C类|ads_battle_herostatus_df|独立|||
 
 ## 
 1. ads_kpi_daily_di 删掉

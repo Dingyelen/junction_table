@@ -13,9 +13,10 @@ summon_id varchar,
 part_date varchar
 )
 with(
-partitioned_by = array['part_date'],
 format = 'ORC',
-transactional = true
+transactional = true,
+bucketed_by = array['part_date'], 
+bucket_count = 10
 );
 
 delete from hive.dow_jpnew_w.dws_summon_daily_di
