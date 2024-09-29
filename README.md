@@ -57,6 +57,7 @@ pass
 3. 核心货币过滤条件，core_log_base
 ##### dws_server_daily_df
 1. schema
+2. 开服日期条件，open_date
 ##### dws_summon_daily_di
 1. schema
 2. 抽卡日志整理，summon_log
@@ -67,15 +68,12 @@ pass
 
 |必要性|表名|依赖情况|分区|分桶|
 |--------|--------|--------|--------|--------|
-|A类|ads_kpi_daily_di|dws_user_daily_di，dws_user_info_di|||
-|A类|ads_kpi_hourly_hi|dws_user_hourly_hi，dws_user_info_di|||
-|A类|ads_core_addreason_di|dws_core_snapshot_di，dws_user_info_di|||
-|A类|ads_core_costreason_di|dws_core_snapshot_di，dws_user_info_di|||
-|A类|ads_active_daily_di|dws_user_daily_di，dws_user_info_di|||
-|A类|ads_retention_daily_di|dws_user_daily_di，dws_user_info_di|||
+|A类|ads_kpi_hourly_hi|dws_user_hourly_hi，dws_user_info_di|part_date||
+|A类|ads_core_addreason_di|dws_core_snapshot_di，dws_user_info_di|part_date||
+|A类|ads_core_costreason_di|dws_core_snapshot_di，dws_user_info_di|part_date||
+|A类|ads_retention_daily_di|dws_user_daily_di，dws_user_info_di|part_date||
 |A类|ads_user_retention_di|dws_user_daily_di，dws_user_info_di|||
-|B类|ads_level_daily_di|dws_user_daily_di，dws_user_info_di|||
-|B类|ads_kpi_server_df|dws_server_daily_df|||
+|A类|ads_active_daily_di|dws_user_daily_di，dws_user_info_di|part_date||
 |B类|ads_hero_upgrade_df|独立|||
 |华清|ads_kpi_life_df|dws_user_daily_di，dws_user_info_di|||
 |华清|ads_kpi_daily_hf|dws_user_hourly_hi，dws_user_info_di|||

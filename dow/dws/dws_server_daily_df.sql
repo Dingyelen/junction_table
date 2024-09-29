@@ -146,7 +146,7 @@ from server_info
 open_date as(
 select min(date) as open_date
 from server_win_info
-where newusers_ac >= 30
+where newusers_ac >= 0
 ), 
 
 server_daily_res as(

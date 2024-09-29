@@ -50,7 +50,7 @@ data_cube as(
 select distinct date, part_date, active_date, role_id, 
 date_diff('day', date, active_date) as retention_day
 from user_daily_join
-cross join unnest(sequence(date, date_add('day', 14, date), interval '1' day)) as t(active_date)
+cross join unnest(filter(sequence(date, date_add('day', 14, date), interval '1' day), x -> x <= current_date)) as t(active_date)
 ), 
 
 data_cube_join as(
