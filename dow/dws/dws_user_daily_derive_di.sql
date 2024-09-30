@@ -20,20 +20,9 @@ part_date varchar
 )
 with(
 partitioned_by = array['part_date']
--- format = 'ORC',
--- transactional = true, 
--- bucketed_by = array['part_date'], 
--- bucket_count = 10
 );
 
 delete from hive.dow_jpnew_w.dws_user_daily_derive_di where part_date >= $start_date and part_date <= $end_date;
--- where exists(
--- select 1
--- from hive.dow_jpnew_w.dws_user_daily_di
--- where dws_user_daily_di.role_id = dws_user_daily_derive_di.role_id
--- and dws_user_daily_di.part_date >= $start_date
--- and dws_user_daily_di.part_date <= $end_date
--- );
 
 insert into hive.dow_jpnew_w.dws_user_daily_derive_di(
 date, role_id, login_days, 
@@ -86,12 +75,6 @@ lag(date, 1, install_date) over(partition by role_id order by date) as before_da
 lead(date, 1, current_date) over(partition by role_id order by date) as after_date, 
 part_date
 from daily_cal
-),
-
-daily_boolean_cal_s as
-(select a.*
-from daily_boolean_cal a
-where not exists (select 1 from hive.dow_jpnew_w.dws_user_daily_di b where a.role_id = b.role_id and a.date = b.date)
 )
 
 select
@@ -101,5 +84,7 @@ money_ac, moneyrmb_ac, webrmb_ac,
 sincetimes_end, core_end, free_end, paid_end, 
 before_date, after_date, 
 part_date
-from daily_boolean_cal_s;
+from daily_boolean_cal
+where part_date >= $start_date
+and  part_date <= $end_date;
 ###
