@@ -58,9 +58,7 @@ online_time bigint
 )
 with(
 format = 'ORC',
-transactional = true, 
-bucketed_by = array['role_id'], 
-bucket_count = 10
+transactional = true
 );
 
 delete from hive.dow_jpnew_w.dws_user_info_di 

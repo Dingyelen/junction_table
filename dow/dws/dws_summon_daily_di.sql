@@ -15,8 +15,7 @@ part_date varchar
 with(
 format = 'ORC',
 transactional = true,
-bucketed_by = array['part_date'], 
-bucket_count = 10
+partitioned_by = array['part_date']
 );
 
 delete from hive.dow_jpnew_w.dws_summon_daily_di

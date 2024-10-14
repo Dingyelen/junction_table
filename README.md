@@ -21,15 +21,15 @@ pass
 2. 根据自己更新频率调整表名
 3. 表血缘
 
-|必要性|表名|依赖情况|分区|分桶|备注|
-|--------|--------|--------|--------|--------|--------|
-|A类|dws_user_daily_di|独立|part_date||
-|A类|dws_user_info_di|dws_user_daily_di||role_id * 10|
-|A类|dws_user_daily_derive_di|dws_user_daily_di||part_date * 10|
+|必要性|表名|依赖情况|分区|备注|
+|--------|--------|--------|--------|--------|
+|A类|dws_user_daily_di|独立|part_date|
+|A类|dws_user_info_di|dws_user_daily_di||
+|A类|dws_user_daily_derive_di|dws_user_daily_di|part_date|
 |A类|dws_user_hourly_hi|独立|part_date||
 |A类|dws_core_snapshot_di|独立|part_date||
 |B类|dws_server_daily_df|dws_user_daily_di|part_date||
-|B类|dws_summon_daily_di|独立||part_date * 10|
+|B类|dws_summon_daily_di|独立|part_date||
 |C类|dws_user_daily2_di|dws_user_daily_di|part_date||
 |C类|dws_user_info_mi|独立|part_month||
 |C类|dws_token_info_mf|独立|||
