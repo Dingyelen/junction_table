@@ -6,7 +6,7 @@
 
 # 2. 模型版本现状与改动
 ## 2.1 现状
-- 目前 DWS 有 10 个表模型，包含了日活，小时活跃，用户属性，主题快照等内容。ADS 有 15 个表模型，包含了核心货币产销存、核心 KPI 指标、同期群指标等内容。
+- 目前 DWS 有 8 个表模型，包含了日活，小时活跃，用户属性，主题快照等内容。ADS 有 6 个表模型，包含了核心货币产销存、核心 KPI 指标、同期群指标等内容。
 ## 2.2 改动
 pass
 
@@ -31,9 +31,6 @@ pass
 |A类|dws_hero_snapshot_di|独立|part_date||
 |B类|dws_server_daily_df|dws_user_daily_di|part_date||
 |B类|dws_summon_daily_di|独立|part_date||
-|C类|dws_user_daily2_di|dws_user_daily_di|part_date||
-|C类|dws_user_info_mi|独立|part_month||
-|C类|dws_token_info_mf|独立|||
 
 ## 3.2 复用修改
 ##### dws_user_daily_di
@@ -81,30 +78,6 @@ pass
 |A类|ads_retention_daily_di|dws_user_daily_di，dws_user_info_di|part_date|
 |A类|ads_user_retention_di|dws_user_daily_di，dws_user_info_di||
 |A类|ads_active_daily_di|dws_user_daily_di，dws_user_info_di|part_date|
-|华清|ads_kpi_life_df|dws_user_daily_di，dws_user_info_di||
-|华清|ads_kpi_daily_hf|dws_user_hourly_hi，dws_user_info_di||
-|C类|ads_act_battle_df|dws_user_daily_di,dws_user_daily2_di||
-|C类|ads_act_daily_df|dws_user_daily_di,dws_user_info_di||
-|C类|ads_battle_herostatus_df|独立||
-
-
-
-
-## 
-1. ads_kpi_daily_di 删掉
-2. ads_retention_daily_di
-- unnest 优化加上 fliter
-3. ads_level_daily_di 删掉
-4. ads_kpi_server_df 删掉，逻辑直接入可视化
-5. ads_hero_upgrade_df 删掉，逻辑直接入可视化，星级逻辑用 dws_hero_snapshot_di
-6. 华清内容暂时不定，存所有数据
-
-
-## superset
-1. dws_user_daily_di 删除 mi 逻辑
-2. 所有 part_date 筛选改成新的形式
-3. dwd_gserver_payment_live 删除 mi 逻辑
-4. 活动看板按照 dws_summon_daily_di 写，日常指标另写
 
 ## 3.4 更新时间表
 pass
