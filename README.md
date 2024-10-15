@@ -28,6 +28,7 @@ pass
 |A类|dws_user_daily_derive_di|dws_user_daily_di|part_date|
 |A类|dws_user_hourly_hi|独立|part_date||
 |A类|dws_core_snapshot_di|独立|part_date||
+|A类|dws_hero_snapshot_di|独立|part_date||
 |B类|dws_server_daily_df|dws_user_daily_di|part_date||
 |B类|dws_summon_daily_di|独立|part_date||
 |C类|dws_user_daily2_di|dws_user_daily_di|part_date||
@@ -55,31 +56,39 @@ pass
 1. schema
 2. app_id
 3. 核心货币过滤条件，core_log_base
+##### dws_hero_snapshot_di
+1. schema
+2. upgraderare_log
+3. upgradehero_log
 ##### dws_server_daily_df
 1. schema
 2. 开服日期条件，open_date
 ##### dws_summon_daily_di
 1. schema
 2. 抽卡日志整理，summon_log
-
+##### dws_summon_daily_di
+1. schema
+2. 抽卡日志整理，summon_log
 
 ## 3.3 ADS（Analytical Data Store）
 1. 表血缘
 
-|必要性|表名|依赖情况|分区|分桶|
-|--------|--------|--------|--------|--------|
-|A类|ads_kpi_hourly_hi|dws_user_hourly_hi，dws_user_info_di|part_date||
-|A类|ads_core_addreason_di|dws_core_snapshot_di，dws_user_info_di|part_date||
-|A类|ads_core_costreason_di|dws_core_snapshot_di，dws_user_info_di|part_date||
-|A类|ads_retention_daily_di|dws_user_daily_di，dws_user_info_di|part_date||
-|A类|ads_user_retention_di|dws_user_daily_di，dws_user_info_di|||
-|A类|ads_active_daily_di|dws_user_daily_di，dws_user_info_di|part_date||
-|B类|ads_hero_upgrade_df|独立|||
-|华清|ads_kpi_life_df|dws_user_daily_di，dws_user_info_di|||
-|华清|ads_kpi_daily_hf|dws_user_hourly_hi，dws_user_info_di|||
-|C类|ads_act_battle_df|dws_user_daily_di,dws_user_daily2_di|||
-|C类|ads_act_daily_df|dws_user_daily_di,dws_user_info_di|||
-|C类|ads_battle_herostatus_df|独立|||
+|必要性|表名|依赖情况|分区|
+|--------|--------|--------|--------|
+|A类|ads_kpi_hourly_hi|dws_user_hourly_hi，dws_user_info_di|part_date|
+|A类|ads_core_addreason_di|dws_core_snapshot_di，dws_user_info_di|part_date|
+|A类|ads_core_costreason_di|dws_core_snapshot_di，dws_user_info_di|part_date|
+|A类|ads_retention_daily_di|dws_user_daily_di，dws_user_info_di|part_date|
+|A类|ads_user_retention_di|dws_user_daily_di，dws_user_info_di||
+|A类|ads_active_daily_di|dws_user_daily_di，dws_user_info_di|part_date|
+|华清|ads_kpi_life_df|dws_user_daily_di，dws_user_info_di||
+|华清|ads_kpi_daily_hf|dws_user_hourly_hi，dws_user_info_di||
+|C类|ads_act_battle_df|dws_user_daily_di,dws_user_daily2_di||
+|C类|ads_act_daily_df|dws_user_daily_di,dws_user_info_di||
+|C类|ads_battle_herostatus_df|独立||
+
+
+
 
 ## 
 1. ads_kpi_daily_di 删掉
@@ -89,6 +98,7 @@ pass
 4. ads_kpi_server_df 删掉，逻辑直接入可视化
 5. ads_hero_upgrade_df 删掉，逻辑直接入可视化，星级逻辑用 dws_hero_snapshot_di
 6. 华清内容暂时不定，存所有数据
+
 
 ## superset
 1. dws_user_daily_di 删除 mi 逻辑
