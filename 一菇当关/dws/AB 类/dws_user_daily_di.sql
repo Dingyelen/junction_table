@@ -195,14 +195,14 @@ min(rank_level) as rank_min,
 max(rank_level) as rank_max, 
 min(power) as power_min,
 max(power) as power_max, 
-sum(money) as money,
-sum(money_rmb) as money_rmb, 
-sum(case when event_name = 'Payment' and pay_source = 'web' then money_rmb else null end) as web_rmb, 
+-- sum(money) as money,
+-- sum(money_rmb) as money_rmb, 
+-- sum(case when event_name = 'Payment' and pay_source = 'web' then money_rmb else null end) as web_rmb, 
 sum(case when event_name = 'Payment' then 1 else null end) as pay_count, 
 sum(case when event_name = 'rolelogin' then 1 else null end) as login_times, 
 sum(online_time) as online_time
 from base_log
-group by 1, 2, 3, 4
+group by 1, 2, 3
 ), 
 
 daily_gserver_first_info as(
@@ -321,7 +321,9 @@ a.online_time, a.login_times,
 j.exchange_rate, 
 h.firstpay_ts, h.firstpay_level, h.firstpay_goodid, h.firstpay_money, 
 i.lastpay_ts, i.lastpay_level, i.lastpay_goodid, i.lastpay_money, 
-a.pay_count, a.money, a.money_rmb, a.web_rmb, 
+a.pay_count, 
+-- a.money, a.money_rmb, a.web_rmb, 
+null as money, null as money_rmb, null as web_rmb, 
 g.sincetimes_gain, g.sincetimes_cost, f.sincetimes_end, 
 c.core_gain, c.core_cost, d.core_end, 
 c.free_gain, c.free_cost, d.free_end, 

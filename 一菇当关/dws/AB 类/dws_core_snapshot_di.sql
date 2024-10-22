@@ -28,7 +28,7 @@ with base_log as(
 select part_date, event_name, event_time, 
 date(event_time) as date, 
 role_id, open_id, adid, device_id, 
-channel, zone_id, alliance_id, app_id, 
+channel, zone_id, alliance_id, 
 vip_level, level, rank_level, power,
 row_number() over(partition by role_id, part_date, event_name order by event_time) as partevent_rn, 
 row_number() over(partition by role_id, part_date, event_name order by event_time desc) as partevent_descrn
@@ -54,7 +54,7 @@ and part_date <= $end_date
 core_log as(
 select part_date, event_name, event_time, 
 role_id, open_id, adid, 
-zone_id, alliance_id, app_id, 
+zone_id, alliance_id, 
 vip_level, level, rank_level, reason, 
 (case when event_type = 'gain' then free_num else null end) as free_gain, 
 (case when event_type = 'gain' then paid_num else null end) as paid_gain, 
@@ -69,7 +69,7 @@ from core_log_base
 core_cal_log as(
 select part_date, event_name, 
 role_id, open_id, adid, 
-zone_id, alliance_id, app_id, 
+zone_id, alliance_id, 
 vip_level, level, rank_level, reason, 
 sum(free_gain) as free_gain,
 sum(paid_gain) as paid_gain,
@@ -78,7 +78,7 @@ sum(free_cost) as free_cost,
 sum(paid_cost) as paid_cost,
 sum(core_cost) as core_cost
 from core_log
-group by 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12
+group by 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11
 ), 
 
 daily_gserver_info as(
