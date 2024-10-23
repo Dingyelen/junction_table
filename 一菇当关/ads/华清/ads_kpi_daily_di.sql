@@ -1,7 +1,15 @@
+/*
+* @Author: dingyelen
+* @Date:   2024-10-16 17:13:44
+* @Last Modified by:   dingyelen
+* @Last Modified time: 2024-10-23 11:31:40
+*/
+
+
 ###
 -- 【基础信息】
 -- kpi
-create table if not exists hive.dow_jpnew_w.ads_kpi_daily_di
+create table if not exists hive.mushroom_tw_w.ads_kpi_daily_di
 (date date,
 zone_id varchar,
 channel varchar,
@@ -25,11 +33,11 @@ part_date varchar
 )
 with(partitioned_by = array['part_date']);
 
-delete from hive.dow_jpnew_w.ads_kpi_daily_di
+delete from hive.mushroom_tw_w.ads_kpi_daily_di
 where part_date >= $start_date
 and part_date <= $end_date;
 
-insert into hive.dow_jpnew_w.ads_kpi_daily_di
+insert into hive.mushroom_tw_w.ads_kpi_daily_di
 (date, zone_id, channel, os, 
 new_users, active_users, 
 pay_users, paid_users, install_pay, newpay_users, 
@@ -46,7 +54,7 @@ level_min, level_max,
 viplevel_min, viplevel_max, 
 online_time, exchange_rate, 
 pay_count, money, money_rmb, web_rmb
-from hive.dow_jpnew_w.dws_user_daily_di 
+from hive.mushroom_tw_w.dws_user_daily_di 
 where part_date >= $start_date
 and part_date <= $end_date
 ), 
@@ -67,9 +75,9 @@ date_diff('day', c.install_date, a.date) as retention_day,
 date_diff('day', c.firstpay_date, a.date) as pay_retention_day,
 date_diff('day', c.install_date, firstpay_date) as firstpay_interval_days
 from user_daily a
-left join hive.dow_jpnew_w.dws_user_daily_derive_di b
+left join hive.mushroom_tw_w.dws_user_daily_derive_di b
 on a.role_id = b.role_id and a.part_date = b.part_date
-left join hive.dow_jpnew_w.dws_user_info_di c
+left join hive.mushroom_tw_w.dws_user_info_di c
 on a.role_id = c.role_id
 where c.is_test is null
 ),
@@ -118,7 +126,7 @@ and a.os = b.os
 his_new as(
 select zone_id, channel, os, 
 max(newuser_ac) as newuser_ac
-from hive.dow_jpnew_w.ads_kpi_daily_di
+from hive.mushroom_tw_w.ads_kpi_daily_di
 where part_date < $start_date
 group by 1, 2, 3
 ), 
@@ -148,4 +156,3 @@ web_rmb, webpay_users, moneyrmb_ac, newuser_ac,
 date_format(date, '%Y-%m-%d') as part_date
 from daily_info_cube
 ;
-###
