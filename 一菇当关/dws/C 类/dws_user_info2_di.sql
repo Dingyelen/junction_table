@@ -1,5 +1,11 @@
 create table if not exists hive.mushroom_tw_w.dws_user_info2_di(
 role_id varchar, 
+android_id varchar,
+gaid varchar,
+device_id varchar,
+device_modelid varchar,
+device_detail varchar,
+is_second varchar, 
 normal_count bigint,
 normal_win bigint,
 adv_count bigint,
@@ -7,12 +13,10 @@ adv_win bigint,
 adv_click bigint,
 adv_success bigint,
 adv_duration bigint,
-android_id varchar,
-gaid varchar,
-device_id varchar,
-device_modelid varchar,
-device_detail varchar,
-is_second varchar
+tech_upgrade bigint,
+equip_upgrade bigint,
+equip_exchange bigint,
+gem_exchange bigint
 )
 with(
 format = 'ORC',
@@ -29,12 +33,12 @@ and dws_user_daily2_di.part_date <= '$end_date'
 );
 
 insert into hive.mushroom_tw_w.dws_user_info2_di(
-role_id, 
+role_id, android_id, gaid, device_id, 
+device_modelid, device_detail, is_second, 
 normal_count, normal_win, 
 adv_count, adv_win, 
 adv_click, adv_success, adv_duration, 
-android_id, gaid, device_id, 
-device_modelid, device_detail, is_second
+tech_upgrade, equip_upgrade, equip_exchange, gem_exchange
 )
 
 with user_daily as(
@@ -56,6 +60,10 @@ sum(adv_win) as adv_win,
 sum(adv_click) as adv_click,
 sum(adv_success) as adv_success,
 sum(adv_duration) as adv_duration, 
+sum(tech_upgrade) as tech_upgrade,  
+sum(equip_upgrade) as equip_upgrade,  
+sum(equip_exchange) as equip_exchange,  
+sum(gem_exchange) as gem_exchange,  
 min(date) as install_date
 from user_daily 
 group by 1
@@ -80,12 +88,12 @@ from user_daily
 )
 
 select 
-a.role_id, 
+a.role_id, b.android_id, b.gaid, b.device_id, 
+b.device_modelid, b.device_detail, coalesce(c.is_second, '') as is_second, 
 a.normal_count, a.normal_win, 
 a.adv_count, a.adv_win, 
 a.adv_click, a.adv_success, a.adv_duration, 
-b.android_id, b.gaid, b.device_id, 
-b.device_modelid, b.device_detail, coalesce(c.is_second, '') as is_second
+a.tech_upgrade, a.equip_upgrade, a.equip_exchange, a.gem_exchange
 from user_info a
 left join user_first_info b
 on a.role_id = b.role_id

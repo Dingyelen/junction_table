@@ -16,6 +16,10 @@ adv_win bigint,
 adv_click bigint,
 adv_success bigint,
 adv_duration bigint,
+tech_upgrade bigint, 
+equip_upgrade bigint, 
+equip_exchange bigint, 
+gem_exchange bigint, 
 part_date varchar
 )
 with(partitioned_by = array['part_date']);
@@ -29,6 +33,7 @@ insert into hive.mushroom_tw_w.dws_user_daily2_di
 android_id, gaid, device_id, device_modelid, device_detail, 
 money_rmb, is_pay, normal_count, normal_win, adv_count, adv_win, 
 adv_click, adv_success, adv_duration, 
+tech_upgrade, equip_upgrade, equip_exchange, gem_exchange, 
 part_date)
  
 with daily_info as(
@@ -146,12 +151,46 @@ from adv_log
 group by 1, 2, 3
 ), 
 
+equip_log as(
+select date(event_time) as date, part_date, event_time, 
+role_id, event_type, page_id, object_id
+from hive.mushroom_tw_r.dwd_gserver_equip_live
+where event_type in ('equipexchange', 'gemexchange')
+), 
+
+equip_cal as(
+select date, part_date, role_id, 
+sum(case when event_type = 'equipexchange' then 1 else null end) as equip_exchange, 
+sum(case when event_type = 'gemexchange' then 1 else null end) as gem_exchange
+from equip_log
+group by 1, 2, 3
+), 
+
+cultivation_log as(
+select date(event_time) as date, part_date, event_time, 
+role_id, event_type, item_did, object_id, 
+upgrade_id, upgrade_step, target_level, target_sublevel, cost_detail
+from hive.mushroom_tw_r.dwd_gserver_cultivation_live
+where part_date >= $start_date
+and part_date <= $end_date
+and upgrade_step = 'complete'
+), 
+
+cultivation_cal as(
+select date, part_date, role_id, 
+sum(case when event_type = 'tech' then 1 else null end) as tech_upgrade, 
+sum(case when event_type = 'equipstar' then 1 else null end) as equip_upgrade
+from equip_log
+group by 1, 2, 3
+), 
+
 daily_res as(
 select a.date, a.part_date, a.role_id, 
 d.android_id, d.gaid, d.device_id, d.device_modelid, d.device_detail, 
 a.money_rmb, (case when a.money_rmb > 0 then 1 else null end) as is_pay, 
 b.normal_count, b.normal_win, b.adv_count, b.adv_win, 
-c.adv_click, c.adv_success, c.adv_duration
+c.adv_click, c.adv_success, c.adv_duration, 
+f.tech_upgrade, f.equip_upgrade, e.equip_exchange, e.gem_exchange
 from daily_info a
 left join battle_cal b
 on a.role_id = b.role_id and a.date = b.date
@@ -159,12 +198,17 @@ left join adv_cal c
 on a.role_id = c.role_id and a.date = c.date
 left join rolelogin_first_info d
 on a.role_id = d.role_id and a.date = d.date
+left join equip_cal e
+on a.role_id = e.role_id and a.date = e.date 
+left join cultivation_cal f
+on a.role_id = f.role_id and a.date = f.date 
 )
 
 select date, role_id, 
 android_id, gaid, device_id, device_modelid, device_detail, 
 money_rmb, is_pay, normal_count, normal_win, adv_count, adv_win, 
 adv_click, adv_success, adv_duration, 
+tech_upgrade, equip_upgrade, equip_exchange, gem_exchange, 
 part_date
 from daily_res
 ;
