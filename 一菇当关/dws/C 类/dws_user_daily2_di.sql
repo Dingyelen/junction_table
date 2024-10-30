@@ -155,7 +155,9 @@ equip_log as(
 select date(event_time) as date, part_date, event_time, 
 role_id, event_type, page_id, object_id
 from hive.mushroom_tw_r.dwd_gserver_equip_live
-where event_type in ('equipexchange', 'gemexchange')
+where part_date >= $start_date
+and part_date <= $end_date
+and event_type in ('equipexchange', 'gemexchange')
 ), 
 
 equip_cal as(
@@ -180,7 +182,7 @@ cultivation_cal as(
 select date, part_date, role_id, 
 sum(case when event_type = 'tech' then 1 else null end) as tech_upgrade, 
 sum(case when event_type = 'equipstar' then 1 else null end) as equip_upgrade
-from equip_log
+from cultivation_log
 group by 1, 2, 3
 ), 
 

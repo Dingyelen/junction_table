@@ -128,7 +128,8 @@ b.new_users, b.active_users_error,
 b.pay_users, b.new_users_pay, b.users_new_pay, 
 b.pay_count_hourly, b.money_rmb_hourly, 
 sum(b.new_users) over (partition by a.zone_id, a.channel, a.os, a.date order by a.hour rows between unbounded preceding and current row) as new_users_ac,
-sum(b.money_rmb_hourly) over (partition by a.zone_id, a.channel, a.os, a.date order by a.hour rows between unbounded preceding and current row) as moneyrmb_ac
+sum(b.money_rmb_hourly) over (partition by a.zone_id, a.channel, a.os, a.date order by a.hour rows between unbounded preceding and current row) as moneyrmb_ac, 
+(case when a.date = current_date and a.hour >= localtimestamp then 0 else 1 end) as is_select
 from data_cube a
 left join hourly_info b
 on a.hour = b.hour
@@ -157,4 +158,6 @@ new_users_ac, moneyrmb_ac,
 part_date
 from hourly_info_final
 where part_date >= $start_date
+and part_date <= $end_date
+and is_select = 1
 ;

@@ -2,7 +2,7 @@
 * @Author: dingyelen
 * @Date:   2024-10-16 17:13:44
 * @Last Modified by:   dingyelen
-* @Last Modified time: 2024-10-16 18:02:22
+* @Last Modified time: 2024-10-30 17:58:01
 */
 
 
@@ -101,8 +101,17 @@ from user_daily_join
 group by 1, 2, 3, 4, 5
 ),
 
+-- 历史新增人数
+his_new as(
+select zone_id, channel, os, 
+max(newuser_ac) as newuser_ac
+from hive.dow_jpnew_w.ads_kpi_daily_di
+where part_date < $start_date
+group by 1, 2, 3
+), 
+
 data_cube as
-(select distinct zone_id, channel, os, t.date from daily_info
+(select distinct zone_id, channel, os, t.date from his_new
 cross join unnest(sequence(date $start_date, date $end_date, interval '1' day)) as t(date)
 ),
 
@@ -120,15 +129,6 @@ on a.date = b.date
 and a.zone_id = b.zone_id 
 and a.channel = b.channel 
 and a.os = b.os
-), 
-
--- 历史新增人数
-his_new as(
-select zone_id, channel, os, 
-max(newuser_ac) as newuser_ac
-from hive.dow_jpnew_w.ads_kpi_daily_di
-where part_date < $start_date
-group by 1, 2, 3
 ), 
 
 new_user_fit as(
