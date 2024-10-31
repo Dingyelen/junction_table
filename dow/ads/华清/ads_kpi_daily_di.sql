@@ -2,7 +2,7 @@
 * @Author: dingyelen
 * @Date:   2024-10-16 17:13:44
 * @Last Modified by:   dingyelen
-* @Last Modified time: 2024-10-30 17:58:01
+* @Last Modified time: 2024-10-31 10:52:25
 */
 
 
@@ -110,10 +110,21 @@ where part_date < $start_date
 group by 1, 2, 3
 ), 
 
-data_cube as
+data_cube1 as
+(select distinct zone_id, channel, os, t.date from daily_info
+cross join unnest(sequence(date $start_date, date $end_date, interval '1' day)) as t(date)
+),
+
+data_cube2 as
 (select distinct zone_id, channel, os, t.date from his_new
 cross join unnest(sequence(date $start_date, date $end_date, interval '1' day)) as t(date)
 ),
+
+data_cube as(
+select * from data_cube1
+union all
+select * from data_cube2
+), 
 
 daily_info_cube as
 (select a.*,
