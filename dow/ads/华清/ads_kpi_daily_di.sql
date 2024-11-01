@@ -2,7 +2,7 @@
 * @Author: dingyelen
 * @Date:   2024-10-16 17:13:44
 * @Last Modified by:   dingyelen
-* @Last Modified time: 2024-10-31 10:52:25
+* @Last Modified time: 2024-11-01 16:59:45
 */
 
 
@@ -121,9 +121,10 @@ cross join unnest(sequence(date $start_date, date $end_date, interval '1' day)) 
 ),
 
 data_cube as(
-select * from data_cube1
+select distinct zone_id, channel, os, date from(
+select zone_id, channel, os, date from data_cube1
 union all
-select * from data_cube2
+select zone_id, channel, os, date from data_cube2)
 ), 
 
 daily_info_cube as
