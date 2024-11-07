@@ -20,7 +20,7 @@ reason, core_cost, users,
 part_date)
 
 with dws_core_daily as(
-select date, role_id, coregain_detail, corecost_detail, core_end, part_date
+select date, role_id, coreadd_detail, corecost_detail, core_end, part_date
 from hive.dow_jpnew_w.dws_core_snapshot_di
 where part_date>=$start_date
 and part_date<=$end_date

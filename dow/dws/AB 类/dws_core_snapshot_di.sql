@@ -2,9 +2,9 @@
 create table if not exists hive.dow_jpnew_w.dws_core_snapshot_di(
 date date, 
 role_id varchar, 
-coregain_detail varchar, 
-freegain_detail varchar, 
-paidgain_detail varchar, 
+coreadd_detail varchar, 
+freeadd_detail varchar, 
+paidadd_detail varchar, 
 corecost_detail varchar, 
 freecost_detail varchar, 
 paidcost_detail varchar, 
@@ -19,7 +19,7 @@ and part_date <= $end_date;
 
 insert into hive.dow_jpnew_w.dws_core_snapshot_di(
 date, role_id, 
-coregain_detail, freegain_detail, paidgain_detail, 
+coreadd_detail, freeadd_detail, paidadd_detail, 
 corecost_detail, freecost_detail, paidcost_detail, 
 core_end, part_date
 )
@@ -63,9 +63,9 @@ select part_date, event_name, event_time,
 role_id, open_id, adid, 
 zone_id, alliance_id, app_id, 
 vip_level, level, rank_level, reason, 
-(case when event_type = 'gain' then free_num else null end) as free_gain, 
-(case when event_type = 'gain' then paid_num else null end) as paid_gain, 
-(case when event_type = 'gain' then free_num + paid_num else null end) as core_gain, 
+(case when event_type = 'add' then free_num else null end) as free_add, 
+(case when event_type = 'add' then paid_num else null end) as paid_add, 
+(case when event_type = 'add' then free_num + paid_num else null end) as core_add, 
 (case when event_type = 'cost' then free_num else null end) as free_cost, 
 (case when event_type = 'cost' then paid_num else null end) as paid_cost, 
 (case when event_type = 'cost' then free_num + paid_num else null end) as core_cost, 
@@ -78,9 +78,9 @@ select part_date, event_name,
 role_id, open_id, adid, 
 zone_id, alliance_id, app_id, 
 vip_level, level, rank_level, reason, 
-sum(free_gain) as free_gain,
-sum(paid_gain) as paid_gain,
-sum(core_gain) as core_gain,
+sum(free_add) as free_add,
+sum(paid_add) as paid_add,
+sum(core_add) as core_add,
 sum(free_cost) as free_cost,
 sum(paid_cost) as paid_cost,
 sum(core_cost) as core_cost
@@ -96,9 +96,9 @@ group by 1, 2, 3
 
 daily_turn_array as(
 select part_date, role_id, 
-json_format(cast(map_agg(reason, core_gain) filter (where core_gain > 0) as json)) as coregain_detail, 
-json_format(cast(map_agg(reason, free_gain) filter (where free_gain > 0) as json)) as freegain_detail, 
-json_format(cast(map_agg(reason, paid_gain) filter (where paid_gain > 0) as json)) as paidgain_detail, 
+json_format(cast(map_agg(reason, core_add) filter (where core_add > 0) as json)) as coreadd_detail, 
+json_format(cast(map_agg(reason, free_add) filter (where free_add > 0) as json)) as freeadd_detail, 
+json_format(cast(map_agg(reason, paid_add) filter (where paid_add > 0) as json)) as paidadd_detail, 
 json_format(cast(map_agg(reason, core_cost) filter (where core_cost > 0) as json)) as corecost_detail, 
 json_format(cast(map_agg(reason, free_cost) filter (where free_cost > 0) as json)) as freecost_detail, 
 json_format(cast(map_agg(reason, paid_cost) filter (where paid_cost > 0) as json)) as paidcost_detail
@@ -114,9 +114,9 @@ from core_log
 )
 
 select a.date, a.role_id, 
-b.coregain_detail, 
-b.freegain_detail, 
-b.paidgain_detail, 
+b.coreadd_detail, 
+b.freeadd_detail, 
+b.paidadd_detail, 
 b.corecost_detail, 
 b.freecost_detail, 
 b.paidcost_detail, 

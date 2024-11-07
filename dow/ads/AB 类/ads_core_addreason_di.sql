@@ -20,7 +20,7 @@ reason, core_add, users,
 part_date)
 
 with dws_core_daily as(
-select date, role_id, coregain_detail, corecost_detail, core_end, part_date
+select date, role_id, coreadd_detail, corecost_detail, core_end, part_date
 from hive.dow_jpnew_w.dws_core_snapshot_di
 where part_date>=$start_date
 and part_date<=$end_date
@@ -29,7 +29,7 @@ and part_date<=$end_date
 dws_core_add_reason as(
 select date, part_date, role_id, reason, core_add
 from dws_core_daily
-cross join unnest(cast(json_parse(coregain_detail) as map(varchar, bigint))) as addinfo(reason, core_add)
+cross join unnest(cast(json_parse(coreadd_detail) as map(varchar, bigint))) as addinfo(reason, core_add)
 ),
 
 dws_core_daily_join as(
