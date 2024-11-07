@@ -47,16 +47,16 @@ web_money decimal(36, 2),
 pay_count bigint, 
 app_count bigint, 
 web_count bigint, 
-sincetimes_gain bigint, 
+sincetimes_add bigint, 
 sincetimes_cost bigint, 
 sincetimes_end bigint, 
-core_gain bigint, 
+core_add bigint, 
 core_cost bigint, 
 core_end bigint, 
-free_gain bigint, 
+free_add bigint, 
 free_cost bigint, 
 free_end bigint, 
-paid_gain bigint, 
+paid_add bigint, 
 paid_cost bigint, 
 paid_end bigint, 
 is_test bigint, 
@@ -84,10 +84,10 @@ currency, firstpay_ts, firstpay_level, firstpay_goodid, firstpay_money,
 lastpay_ts, lastpay_level, lastpay_goodid, lastpay_money, 
 pay_detail, money, app_money, web_money, 
 pay_count, app_count, web_count, 
-sincetimes_gain, sincetimes_cost, sincetimes_end, 
-core_gain, core_cost, core_end, 
-free_gain, free_cost, free_end, 
-paid_gain, paid_cost, paid_end, 
+sincetimes_add, sincetimes_cost, sincetimes_end, 
+core_add, core_cost, core_end, 
+free_add, free_cost, free_end, 
+paid_add, paid_cost, paid_end, 
 is_test, part_date)
  
 with base_log as(
@@ -127,9 +127,9 @@ select part_date, event_name, event_time,
 role_id, open_id, adid, 
 zone_id, alliance_id, app_id, 
 vip_level, level, rank_level, reason, 
-(case when event_type = 'gain' then free_num else null end) as free_gain, 
-(case when event_type = 'gain' then paid_num else null end) as paid_gain, 
-(case when event_type = 'gain' then free_num + paid_num else null end) as core_gain, 
+(case when event_type = 'gain' then free_num else null end) as free_add, 
+(case when event_type = 'gain' then paid_num else null end) as paid_add, 
+(case when event_type = 'gain' then free_num + paid_num else null end) as core_add, 
 (case when event_type = 'cost' then free_num else null end) as free_cost, 
 (case when event_type = 'cost' then paid_num else null end) as paid_cost, 
 (case when event_type = 'cost' then free_num + paid_num else null end) as core_cost, 
@@ -158,7 +158,7 @@ select part_date, event_name, event_time,
 role_id, open_id, adid, 
 zone_id, alliance_id, app_id, 
 vip_level, level, rank_level, reason, 
-(case when event_type = 'gain' then item_num else null end) as sincetimes_gain, 
+(case when event_type = 'gain' then item_num else null end) as sincetimes_add, 
 (case when event_type = 'cost' then item_num else null end) as sincetimes_cost, 
 item_end as sincetimes_end
 from item_log_base
@@ -247,9 +247,9 @@ from core_log
 
 core_gserver_info as(
 select part_date, role_id, 
-sum(free_gain) as free_gain, 
-sum(paid_gain) as paid_gain, 
-sum(core_gain) as core_gain, 
+sum(free_add) as free_add, 
+sum(paid_add) as paid_add, 
+sum(core_add) as core_add, 
 sum(free_cost) as free_cost, 
 sum(paid_cost) as paid_cost, 
 sum(core_cost) as core_cost
@@ -265,7 +265,7 @@ from item_log
 
 item_gserver_info as(
 select part_date, role_id, 
-sum(sincetimes_gain) as sincetimes_gain, 
+sum(sincetimes_add) as sincetimes_add, 
 sum(sincetimes_cost) as sincetimes_cost
 from item_log
 group by 1, 2
@@ -343,10 +343,10 @@ b.currency, i.firstpay_ts, i.firstpay_level, i.firstpay_goodid, i.firstpay_money
 j.lastpay_ts, j.lastpay_level, j.lastpay_goodid, j.lastpay_money, 
 b.pay_detail, b.money, b.app_money, b.web_money, 
 a.pay_count, a.app_count, a.web_count, 
-h.sincetimes_gain, h.sincetimes_cost, g.sincetimes_end, 
-d.core_gain, d.core_cost, e.core_end, 
-d.free_gain, d.free_cost, e.free_end, 
-d.paid_gain, d.paid_cost, e.paid_end, 
+h.sincetimes_add, h.sincetimes_cost, g.sincetimes_end, 
+d.core_add, d.core_cost, e.core_end, 
+d.free_add, d.free_cost, e.free_end, 
+d.paid_add, d.paid_cost, e.paid_end, 
 z.is_test, a.part_date
 from daily_gserver_info a
 left join daily_payment_info b
@@ -387,10 +387,10 @@ currency, firstpay_ts, firstpay_level, firstpay_goodid, firstpay_money,
 lastpay_ts, lastpay_level, lastpay_goodid, lastpay_money, 
 pay_detail, money, app_money, web_money, 
 pay_count, app_count, web_count, 
-sincetimes_gain, sincetimes_cost, sincetimes_end, 
-core_gain, core_cost, core_end, 
-free_gain, free_cost, free_end, 
-paid_gain, paid_cost, paid_end, 
+sincetimes_add, sincetimes_cost, sincetimes_end, 
+core_add, core_cost, core_end, 
+free_add, free_cost, free_end, 
+paid_add, paid_cost, paid_end, 
 is_test, part_date
 from daily_info;
 ###
