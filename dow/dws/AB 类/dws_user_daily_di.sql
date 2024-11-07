@@ -31,7 +31,7 @@ power_min bigint,
 power_max bigint, 
 online_time bigint, 
 login_times bigint, 
-exchange_rate double, 
+currency varchar, 
 firstpay_ts timestamp(3), 
 firstpay_level bigint, 
 firstpay_goodid varchar, 
@@ -40,10 +40,13 @@ lastpay_ts timestamp(3),
 lastpay_level bigint, 
 lastpay_goodid varchar, 
 lastpay_money decimal(36, 2), 
-pay_count bigint, 
+pay_detail varchar, 
 money decimal(36, 2), 
-money_rmb decimal(36, 2), 
-web_rmb decimal(36, 2), 
+app_money decimal(36, 2), 
+web_money decimal(36, 2), 
+pay_count bigint, 
+app_count bigint, 
+web_count bigint, 
 sincetimes_gain bigint, 
 sincetimes_cost bigint, 
 sincetimes_end bigint, 
@@ -67,47 +70,38 @@ and part_date <= $end_date;
 
 insert into  hive.dow_jpnew_w.dws_user_daily_di
 (date, role_id, device_id, open_id, adid, 
-app_id, channel, zone_id, alliance_id, os, 
-ip, country, 
+app_id, channel, zone_id, alliance_id, 
+os, ip, country, 
 network, campaign, creative, adgroup, 
 campaign_id, creative_id, adgroup_id, 
 first_ts, last_ts, 
-viplevel_min, viplevel_max, 
-level_min, level_max, 
-rank_min, rank_max, 
-power_min, power_max, 
+viplevel_min, viplevel_max,
+level_min, level_max,
+rank_min, rank_max,
+power_min, power_max,  
 online_time, login_times, 
-exchange_rate, 
-firstpay_ts, firstpay_level, firstpay_goodid, firstpay_money, 
+currency, firstpay_ts, firstpay_level, firstpay_goodid, firstpay_money, 
 lastpay_ts, lastpay_level, lastpay_goodid, lastpay_money, 
-pay_count, money, money_rmb, web_rmb, 
+pay_detail, money, app_money, web_money, 
+pay_count, app_count, web_count, 
 sincetimes_gain, sincetimes_cost, sincetimes_end, 
 core_gain, core_cost, core_end, 
 free_gain, free_cost, free_end, 
 paid_gain, paid_cost, paid_end, 
 is_test, part_date)
  
-with currency_rate as(
-select currency, currency_time, rate * 0.01 as exchange_rate
-from mysql_bi_r."gbsp-bi-bigdata".t_currency_rate
-where currency = 'JPY'
-), 
-
-base_log as(
+with base_log as(
 select part_date, event_name, event_time, 
 date(event_time) as date, 
 role_id, open_id, adid, device_id, 
 channel, zone_id, alliance_id,  
 'dow_jp' as app_id, 
 vip_level, level, rank_level, power, 
-pay_source, payment_itemid, a.currency, a.money, b.exchange_rate, 
-a.money * b.exchange_rate as money_rmb, 
+pay_source, payment_itemid, currency, money, 
 online_time, 
 row_number() over(partition by role_id, part_date, event_name order by event_time) as partevent_rn, 
 row_number() over(partition by role_id, part_date, event_name order by event_time desc) as partevent_descrn
-from hive.dow_jpnew_r.dwd_merge_base_live a
-left join currency_rate b
-on date_format(a.event_time, '%Y-%m') = b.currency_time 
+from hive.dow_jpnew_r.dwd_merge_base_live
 where part_date >= $start_date
 and part_date <= $end_date
 ), 
@@ -197,14 +191,40 @@ min(rank_level) as rank_min,
 max(rank_level) as rank_max, 
 min(power) as power_min,
 max(power) as power_max, 
-sum(money) as money,
-sum(money_rmb) as money_rmb, 
-sum(case when event_name = 'Payment' and pay_source = 'web' then money_rmb else null end) as web_rmb, 
 sum(case when event_name = 'Payment' then 1 else null end) as pay_count, 
+sum(case when event_name = 'Payment' and pay_source = 'app' then 1 else null end) as app_count, 
+sum(case when event_name = 'Payment' and pay_source = 'web' then 1 else null end) as web_count, 
 sum(case when event_name = 'rolelogin' then 1 else null end) as login_times, 
 sum(online_time) as online_time
 from base_log
 group by 1, 2, 3, 4
+), 
+
+daily_payment_cal as(
+select part_date, date, role_id, currency, 
+sum(money) as money, 
+sum(case when pay_source = 'app' then money else null end) as app_money, 
+sum(case when pay_source = 'web' then money else null end) as web_money
+from base_log
+where event_name = 'Payment'
+group by 1, 2, 3, 4
+), 
+
+daily_payment_detail as(
+select part_date, date, role_id, 
+array_sort(array_agg(json_object('currency': currency, 'money': money, 'app_money': app_money, 'web_money': web_money)), 
+(x, y) -> if(json_value(x, 'lax $.currency') < json_value(y, 'lax $.currency'), 1, if(json_value(x, 'lax $.currency') = json_value(y, 'lax $.currency'), 0, -1))) as pay_detail
+from daily_payment_cal
+group by 1, 2, 3
+), 
+
+daily_payment_info as(
+select part_date, date, role_id, pay_detail, 
+json_value(element_at(pay_detail, 1), 'lax $.currency') as currency, 
+json_value(element_at(pay_detail, 1), 'lax $.money') as money, 
+json_value(element_at(pay_detail, 1), 'lax $.app_money') as app_money, 
+json_value(element_at(pay_detail, 1), 'lax $.web_money') as web_money
+from daily_payment_detail
 ), 
 
 daily_gserver_first_info as(
@@ -308,66 +328,65 @@ from hive.dow_jpnew_w.dim_gserver_base_roleid
 daily_info as(
 select 
 a.date, 
-a.role_id, b.device_id, b.open_id, e.adid, 
-a.app_id, b.channel, b.zone_id, b.alliance_id, 
-e.os, e.ip, e.country, 
-e.network, e.campaign, e.creative, e.adgroup, 
-e.campaign_id, e.creative_id, e.adgroup_id, 
+a.role_id, c.device_id, c.open_id, e.adid, 
+a.app_id, c.channel, c.zone_id, c.alliance_id, 
+f.os, f.ip, f.country, 
+f.network, f.campaign, f.creative, f.adgroup, 
+f.campaign_id, f.creative_id, f.adgroup_id, 
 a.first_ts, a.last_ts, 
 a.viplevel_min, a.viplevel_max,
 a.level_min, a.level_max,
 a.rank_min, a.rank_max,
 a.power_min, a.power_max,  
 a.online_time, a.login_times, 
-j.exchange_rate, 
-h.firstpay_ts, h.firstpay_level, h.firstpay_goodid, h.firstpay_money, 
-i.lastpay_ts, i.lastpay_level, i.lastpay_goodid, i.lastpay_money, 
-a.pay_count, a.money, a.money_rmb, a.web_rmb, 
-g.sincetimes_gain, g.sincetimes_cost, f.sincetimes_end, 
-c.core_gain, c.core_cost, d.core_end, 
-c.free_gain, c.free_cost, d.free_end, 
-c.paid_gain, c.paid_cost, d.paid_end, 
+b.currency, i.firstpay_ts, i.firstpay_level, i.firstpay_goodid, i.firstpay_money, 
+j.lastpay_ts, j.lastpay_level, j.lastpay_goodid, j.lastpay_money, 
+b.pay_detail, b.money, b.app_money, b.web_money, 
+a.pay_count, a.app_count, a.web_count, 
+h.sincetimes_gain, h.sincetimes_cost, g.sincetimes_end, 
+d.core_gain, d.core_cost, e.core_end, 
+d.free_gain, d.free_cost, e.free_end, 
+d.paid_gain, d.paid_cost, e.paid_end, 
 z.is_test, a.part_date
 from daily_gserver_info a
-left join daily_gserver_first_info b
+left join daily_payment_info b
 on a.role_id = b.role_id and a.part_date = b.part_date
-left join core_gserver_info c
+left join daily_gserver_first_info c
 on a.role_id = c.role_id and a.part_date = c.part_date
-left join core_gserver_last_info d
+left join core_gserver_info d
 on a.role_id = d.role_id and a.part_date = d.part_date
-left join adjust_first_info e
+left join core_gserver_last_info e
 on a.role_id = e.role_id and a.part_date = e.part_date
-left join item_gserver_last_info f
+left join adjust_first_info f
 on a.role_id = f.role_id and a.part_date = f.part_date
-left join item_gserver_info g
+left join item_gserver_last_info g
 on a.role_id = g.role_id and a.part_date = g.part_date
-left join first_info h
+left join item_gserver_info h
 on a.role_id = h.role_id and a.part_date = h.part_date
-left join last_info i
+left join first_info i
 on a.role_id = i.role_id and a.part_date = i.part_date
-left join exchange_info j
-on a.part_date = j.part_date
+left join last_info j
+on a.role_id = j.role_id and a.part_date = j.part_date
 left join test_info z
 on a.role_id = z.role_id
 )
 
 select 
 date, role_id, device_id, open_id, adid, 
-app_id, channel, zone_id, 
-alliance_id, os, 
-ip, country, 
+app_id, channel, zone_id, alliance_id, 
+os, ip, country, 
 network, campaign, creative, adgroup, 
 campaign_id, creative_id, adgroup_id, 
 first_ts, last_ts, 
-viplevel_min, viplevel_max, 
-level_min, level_max, 
-rank_min, rank_max, 
+viplevel_min, viplevel_max,
+level_min, level_max,
+rank_min, rank_max,
 power_min, power_max,  
 online_time, login_times, 
-exchange_rate, 
-firstpay_ts, firstpay_level, firstpay_goodid, firstpay_money, 
+currency, firstpay_ts, firstpay_level, firstpay_goodid, firstpay_money, 
 lastpay_ts, lastpay_level, lastpay_goodid, lastpay_money, 
-pay_count, money, money_rmb, web_rmb, 
+pay_detail, money, app_money, web_money, 
+pay_count, app_count, web_count, 
 sincetimes_gain, sincetimes_cost, sincetimes_end, 
 core_gain, core_cost, core_end, 
 free_gain, free_cost, free_end, 
