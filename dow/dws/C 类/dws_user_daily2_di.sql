@@ -2,7 +2,7 @@
 create table if not exists hive.dow_jpnew_w.dws_user_daily2_di(
 date date, 
 role_id varchar,
-money_rmb decimal(36, 2),
+money decimal(36, 2),
 is_pay bigint,
 summon_list array(varchar), 
 summon_free bigint,
@@ -33,7 +33,7 @@ and part_date <= $end_date;
 
 insert into hive.dow_jpnew_w.dws_user_daily2_di
 (date, role_id, 
-money_rmb, is_pay, 
+money, is_pay, 
 summon_list, summon_free, summon_valid, summon_count, 
 summon_continue, core_cost, 
 is_summon, is_both_summonpay, 
@@ -45,7 +45,7 @@ part_date)
  
 with daily_info as(
 select date, part_date, role_id, 
-money_rmb
+money
 from hive.dow_jpnew_w.dws_user_daily_di
 where part_date >= $start_date
 and part_date <= $end_date
@@ -137,11 +137,11 @@ group by 1, 2, 3
 
 daily_res as(
 select a.date, a.part_date, a.role_id, 
-a.money_rmb, (case when a.money_rmb > 0 then 1 else null end) as is_pay, 
+a.money, (case when a.money > 0 then 1 else null end) as is_pay, 
 c.summon_list, 
 b.summon_free, b.summon_valid, b.summon_count, b.summon_continue, b.core_cost, 
 (case when b.summon_count > 0 then 1 else null end) as is_summon, 
-(case when a.money_rmb > 0 and b.summon_count > 0 then 1 else null end) as is_both_summonpay, 
+(case when a.money > 0 and b.summon_count > 0 then 1 else null end) as is_both_summonpay, 
 (case when d.is_battlefield>0 then 1 else null end) as is_battlefield, 
 d.pvp_count, d.pvp_win, (case when d.pvp_count > 0 then 1 else null end) as is_pvp, 
 d.pvp_alliance, (case when d.pvp_count > 0 then 1 else null end) as is_pvpalliance,
@@ -160,7 +160,7 @@ on a.role_id = e.role_id and a.date = e.date
 )
 
 select date, role_id, 
-money_rmb, is_pay, 
+money, is_pay, 
 summon_list, summon_free, summon_valid, summon_count, 
 summon_continue, core_cost, 
 is_summon, is_both_summonpay, 

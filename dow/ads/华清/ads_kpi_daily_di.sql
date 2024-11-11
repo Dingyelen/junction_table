@@ -2,7 +2,7 @@
 * @Author: dingyelen
 * @Date:   2024-10-16 17:13:44
 * @Last Modified by:   dingyelen
-* @Last Modified time: 2024-11-01 16:59:45
+* @Last Modified time: 2024-11-07 18:22:29
 */
 
 
@@ -48,27 +48,21 @@ web_rmb, webpay_users, moneyrmb_ac, newuser_ac,
 part_date)
 
 with user_daily as(
-select 
-date, part_date, role_id, 
-level_min, level_max,
-viplevel_min, viplevel_max, 
-online_time, exchange_rate, 
-pay_count, money, money_rmb, web_rmb
+select date, part_date, role_id, 
+level_min, level_max, viplevel_min, viplevel_max, 
+online_time, money, web_money, app_money, 
+pay_count, web_count, app_count,  
 from hive.dow_jpnew_w.dws_user_daily_di 
 where part_date >= $start_date
 and part_date <= $end_date
 ), 
 
-user_daily_join as
-(select 
-a.date, a.part_date,
-a.role_id, 
-a.level_min, a.level_max,
-a.viplevel_min, a.viplevel_max, 
-a.online_time, 
-a.exchange_rate, a.pay_count, a.money, a.money_rmb, a.web_rmb, 
-b.moneyrmb_ac, b.is_new, 
-c.install_date, date(c.lastlogin_ts) as lastlogin_date, 
+user_daily_join as(
+select a.date, a.part_date, a.role_id, 
+a.level_min, a.level_max, a.viplevel_min, a.viplevel_max, 
+a.online_time, a.money, a.web_money, a.app_money, b.money_ac, 
+a.pay_count, a.web_count, a.app_count,  
+b.is_new, c.install_date, date(c.lastlogin_ts) as lastlogin_date, 
 c.firstpay_date, c.firstpay_goodid, c.firstpay_level,
 c.zone_id, c.channel, c.os, 
 date_diff('day', c.install_date, a.date) as retention_day,
@@ -86,16 +80,16 @@ daily_info as
 (select date, part_date, zone_id, channel, os, 
 count(distinct (case when retention_day = 0 then role_id else null end)) as new_users,
 count(distinct role_id) as active_users,
-count(distinct (case when money_rmb > 0 then role_id else null end)) as pay_users,
-count(distinct (case when moneyrmb_ac > 0 then role_id else null end)) as paid_users, 
-count(distinct (case when money_rmb > 0 and retention_day = 0 and pay_retention_day = 0 then role_id else null end)) as install_pay,
-count(distinct (case when money_rmb > 0 and pay_retention_day = 0 then role_id else null end)) as newpay_users,
+count(distinct (case when money > 0 then role_id else null end)) as pay_users,
+count(distinct (case when money_ac > 0 then role_id else null end)) as paid_users, 
+count(distinct (case when money > 0 and retention_day = 0 and pay_retention_day = 0 then role_id else null end)) as install_pay,
+count(distinct (case when money > 0 and pay_retention_day = 0 then role_id else null end)) as newpay_users,
 sum(online_time) as online_time, 
-sum(pay_count) as pay_count, sum(money_rmb) as money_rmb, 
-sum(case when money_rmb > 0 and retention_day = 0 and pay_retention_day = 0 then money_rmb else null end) as install_moneyrmb, 
-sum(case when money_rmb > 0 and pay_retention_day = 0 then money_rmb else null end) as newpay_moneyrmb, 
-sum(web_rmb) as web_rmb, 
-count(distinct (case when web_rmb > 0  then role_id else null end)) as webpay_users, 
+sum(pay_count) as pay_count, sum(money) as money, 
+sum(case when money > 0 and retention_day = 0 and pay_retention_day = 0 then money else null end) as install_money, 
+sum(case when money > 0 and pay_retention_day = 0 then money else null end) as newpay_money, 
+sum(app_money) as app_money, sum(web_money) as web_money, 
+count(distinct (case when web_money > 0  then role_id else null end)) as webpay_users, 
 sum(moneyrmb_ac) as moneyrmb_ac
 from user_daily_join
 group by 1, 2, 3, 4, 5

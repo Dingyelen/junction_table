@@ -40,7 +40,7 @@ lastpay_ts timestamp(3),
 lastpay_level bigint, 
 lastpay_goodid varchar, 
 lastpay_money decimal(36, 2), 
-pay_detail varchar, 
+pay_detail array(varchar), 
 money decimal(36, 2), 
 app_money decimal(36, 2), 
 web_money decimal(36, 2), 
@@ -221,9 +221,9 @@ group by 1, 2, 3
 daily_payment_info as(
 select part_date, date, role_id, pay_detail, 
 json_value(element_at(pay_detail, 1), 'lax $.currency') as currency, 
-json_value(element_at(pay_detail, 1), 'lax $.money') as money, 
-json_value(element_at(pay_detail, 1), 'lax $.app_money') as app_money, 
-json_value(element_at(pay_detail, 1), 'lax $.web_money') as web_money
+cast(json_value(element_at(pay_detail, 1), 'lax $.money') as double) as money, 
+cast(json_value(element_at(pay_detail, 1), 'lax $.app_money') as double) as app_money, 
+cast(json_value(element_at(pay_detail, 1), 'lax $.web_money') as double) as web_money
 from daily_payment_detail
 ), 
 
@@ -311,14 +311,6 @@ where event_name = 'Payment'
 and partevent_descrn = 1
 ), 
 
-exchange_info as(
-select part_date, 
-min(exchange_rate) as exchange_rate
-from base_log
-where event_name = 'Payment'
-group by 1
-), 
-
 test_info as(
 select distinct role_id, 
 1 as is_test
@@ -328,7 +320,7 @@ from hive.dow_jpnew_w.dim_gserver_base_roleid
 daily_info as(
 select 
 a.date, 
-a.role_id, c.device_id, c.open_id, e.adid, 
+a.role_id, c.device_id, c.open_id, f.adid, 
 a.app_id, c.channel, c.zone_id, c.alliance_id, 
 f.os, f.ip, f.country, 
 f.network, f.campaign, f.creative, f.adgroup, 

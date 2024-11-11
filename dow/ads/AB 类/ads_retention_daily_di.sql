@@ -15,13 +15,8 @@ insert into hive.dow_jpnew_w.ads_retention_daily_di
 (date, retention_day, dau, active_users, part_date)
 
 with user_daily as(
-select 
-date, part_date,
-role_id, 
-level_min as level_min_daily, level_max as level_max_daily,
-viplevel_min as viplevel_min_daily, viplevel_max as viplevel_max_daily,
-money as money_daily, 
-money_rmb as money_rmb_daily, exchange_rate
+select date, part_date, role_id, 
+level_min, level_max, viplevel_min, viplevel_max, money
 from hive.dow_jpnew_w.dws_user_daily_di 
 where part_date >= date_format(date_add('day', -31, date($start_date)), '%Y-%m-%d')
 and part_date <= $end_date
@@ -31,9 +26,8 @@ user_daily_join as
 (select 
 a.date, a.part_date,
 a.role_id, 
-a.level_min_daily, a.level_max_daily,
-a.viplevel_min_daily, a.viplevel_max_daily,
-a.money_daily, a.money_rmb_daily, a.exchange_rate,
+a.level_min, a.level_max,
+a.viplevel_min, a.viplevel_max, a.money, 
 b.install_date, date(b.lastlogin_ts) as lastlogin_date, 
 b.moneyrmb_ac, b.firstpay_date, b.firstpay_goodid, b.firstpay_level,
 b.zone_id, b.channel,
