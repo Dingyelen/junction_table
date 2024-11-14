@@ -35,7 +35,7 @@ cross join unnest(cast(json_parse(corecost_detail) as map(varchar, bigint))) as 
 dws_core_daily_join as(
 select a.date, a.part_date, a.role_id, a.reason, a.core_cost,
 b.install_date, date(b.lastlogin_ts) as lastlogin_date, 
-b.moneyrmb_ac, b.firstpay_date, b.firstpay_goodid, b.firstpay_level,
+b.firstpay_date, b.firstpay_goodid, b.firstpay_level,
 b.zone_id, b.channel,
 date_diff('day', b.install_date, a.date) as retention_day,
 date_diff('day', b.firstpay_date, a.date) as pay_retention_day,

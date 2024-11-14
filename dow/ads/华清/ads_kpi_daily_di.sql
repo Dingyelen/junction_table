@@ -2,7 +2,7 @@
 * @Author: dingyelen
 * @Date:   2024-10-16 17:13:44
 * @Last Modified by:   dingyelen
-* @Last Modified time: 2024-11-07 18:22:29
+* @Last Modified time: 2024-11-13 14:10:00
 */
 
 
@@ -10,25 +10,28 @@
 -- 【基础信息】
 -- kpi
 create table if not exists hive.dow_jpnew_w.ads_kpi_daily_di
-(date date,
-zone_id varchar,
-channel varchar,
+(date date, 
+zone_id varchar, 
+channel varchar, 
 os varchar, 
-new_users bigint,
-active_users bigint,
+new_users bigint, 
+active_users bigint, 
 pay_users bigint, 
-paid_users bigint,
-install_pay bigint,
-newpay_users bigint,
-online_time bigint,
-pay_count bigint,
-money_rmb decimal(36, 2),
-install_moneyrmb decimal(36, 2), 
-newpay_moneyrmb decimal(36, 2), 
-web_rmb decimal(36, 2), 
+paid_users bigint, 
 webpay_users bigint, 
-moneyrmb_ac decimal(36, 2),
-newuser_ac bigint,
+install_pay bigint, 
+newpay_users bigint, 
+online_time bigint, 
+money decimal(36, 2), 
+app_money decimal(36, 2), 
+web_money decimal(36, 2), 
+money_ac decimal(36, 2), 
+install_money decimal(36, 2), 
+newpay_money decimal(36, 2), 
+pay_count bigint, 
+app_count bigint, 
+web_count bigint, 
+newuser_ac bigint, 
 part_date varchar
 )
 with(partitioned_by = array['part_date']);
@@ -40,18 +43,16 @@ and part_date <= $end_date;
 insert into hive.dow_jpnew_w.ads_kpi_daily_di
 (date, zone_id, channel, os, 
 new_users, active_users, 
-pay_users, paid_users, install_pay, newpay_users, 
-online_time, 
-pay_count, money_rmb, 
-install_moneyrmb, newpay_moneyrmb, 
-web_rmb, webpay_users, moneyrmb_ac, newuser_ac, 
-part_date)
+pay_users, paid_users, webpay_users, install_pay, newpay_users, 
+online_time, money, app_money, web_money, money_ac, 
+install_money, newpay_money, 
+pay_count, app_count, web_count, newuser_ac, part_date)
 
 with user_daily as(
 select date, part_date, role_id, 
 level_min, level_max, viplevel_min, viplevel_max, 
 online_time, money, web_money, app_money, 
-pay_count, web_count, app_count,  
+pay_count, web_count, app_count
 from hive.dow_jpnew_w.dws_user_daily_di 
 where part_date >= $start_date
 and part_date <= $end_date
@@ -85,12 +86,11 @@ count(distinct (case when money_ac > 0 then role_id else null end)) as paid_user
 count(distinct (case when money > 0 and retention_day = 0 and pay_retention_day = 0 then role_id else null end)) as install_pay,
 count(distinct (case when money > 0 and pay_retention_day = 0 then role_id else null end)) as newpay_users,
 sum(online_time) as online_time, 
-sum(pay_count) as pay_count, sum(money) as money, 
+sum(money) as money, sum(app_money) as app_money, sum(web_money) as web_money, sum(money_ac) as money_ac, 
 sum(case when money > 0 and retention_day = 0 and pay_retention_day = 0 then money else null end) as install_money, 
 sum(case when money > 0 and pay_retention_day = 0 then money else null end) as newpay_money, 
-sum(app_money) as app_money, sum(web_money) as web_money, 
-count(distinct (case when web_money > 0  then role_id else null end)) as webpay_users, 
-sum(moneyrmb_ac) as moneyrmb_ac
+sum(pay_count) as pay_count, sum(app_count) as app_count, sum(web_count) as web_count, 
+count(distinct (case when web_money > 0  then role_id else null end)) as webpay_users
 from user_daily_join
 group by 1, 2, 3, 4, 5
 ),
@@ -124,10 +124,10 @@ select zone_id, channel, os, date from data_cube2)
 daily_info_cube as
 (select a.*,
 b.new_users, b.active_users, 
-b.pay_users, b.paid_users, b.install_pay, b.newpay_users, 
-b.online_time, 
-b.pay_count, b.money_rmb, b.install_moneyrmb, b.newpay_moneyrmb, 
-b.web_rmb, b.webpay_users, b.moneyrmb_ac, 
+b.pay_users, b.paid_users, b.webpay_users, b.install_pay, b.newpay_users, 
+b.online_time, b.money, b.app_money, b.web_money, b.money_ac, 
+b.install_money, b.newpay_money, 
+b.pay_count, b.app_count, b.web_count, 
 sum(b.new_users) over(partition by a.zone_id, a.channel, a.os order by a.date rows between unbounded preceding and current row) as newuser_ac
 from data_cube a
 left join daily_info b
@@ -140,10 +140,10 @@ and a.os = b.os
 new_user_fit as(
 select a.date, a.zone_id, a.channel, a.os, 
 a.new_users, a.active_users, 
-a.pay_users, a.paid_users, a.install_pay, a.newpay_users, 
-a.online_time, 
-a.pay_count, a.money_rmb, a.install_moneyrmb, a.newpay_moneyrmb, 
-a.web_rmb, a.webpay_users, a.moneyrmb_ac, 
+a.pay_users, a.paid_users, a.webpay_users, a.install_pay, a.newpay_users, 
+a.online_time, a.money, a.app_money, a.web_money, a.money_ac, 
+a.install_money, a.newpay_money, 
+a.pay_count, a.app_count, a.web_count, 
 coalesce(a.newuser_ac, 0) + coalesce(b.newuser_ac, 0) as newuser_ac
 from daily_info_cube a
 left join his_new b
@@ -154,11 +154,10 @@ and a.os = b.os
 
 select date, zone_id, channel, os, 
 new_users, active_users, 
-pay_users, paid_users, install_pay, newpay_users, 
-online_time, 
-pay_count, money_rmb, 
-install_moneyrmb, newpay_moneyrmb, 
-web_rmb, webpay_users, moneyrmb_ac, newuser_ac, 
+pay_users, paid_users, webpay_users, install_pay, newpay_users, 
+online_time, money, app_money, web_money, money_ac, 
+install_money, newpay_money, 
+pay_count, app_count, web_count, newuser_ac, 
 date_format(date, '%Y-%m-%d') as part_date
 from daily_info_cube
 ;

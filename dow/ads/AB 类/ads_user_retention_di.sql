@@ -40,7 +40,7 @@ select a.date, a.part_date, a.role_id,
 a.level_min, a.level_max, a.viplevel_min, a.viplevel_max,
 a.money, a.online_time, 
 b.install_date, date(b.lastlogin_ts) as lastlogin_date, 
-b.moneyrmb_ac, b.firstpay_date, b.firstpay_goodid, b.firstpay_level,
+b.firstpay_date, b.firstpay_goodid, b.firstpay_level,
 b.zone_id, b.channel, b.os, 
 (case when b.install_date=b.firstpay_date then 'firstdate_break' 
 when b.firstpay_date is not null then 'other_break'
@@ -61,7 +61,7 @@ select date, install_date, zone_id, channel, os, break_type, retention_day,
 count(distinct role_id) as active_users,
 count(distinct (case when money > 0 then role_id else null end)) as pay_users,
 count(distinct (case when money > 0 and pay_retention_day = 0 then role_id else null end)) as newpay_users,
-sum(money_rmb) as money, 
+sum(money) as money, 
 sum(online_time) as online_time
 from user_daily_join
 group by 1, 2, 3, 4, 5, 6, 7

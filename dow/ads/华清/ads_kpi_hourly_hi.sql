@@ -4,7 +4,6 @@ hour timestamp,
 zone_id varchar,
 channel varchar,
 os varchar, 
-exchange_rate double,
 new_users bigint,
 active_users_error bigint,
 active_users bigint,
@@ -13,9 +12,9 @@ pay_users bigint,
 new_users_pay bigint,
 users_new_pay bigint,
 pay_count_hourly bigint,
-money_rmb_hourly decimal(36, 2),
-new_users_ac bigint, 
-moneyrmb_ac decimal(36, 2), 
+money_hourly decimal(36, 2),
+newusers_ac bigint, 
+money_ac decimal(36, 2), 
 part_date varchar
 )
 with(partitioned_by = array['part_date']);
@@ -26,18 +25,15 @@ and part_date <= $end_date;
 
 insert into hive.dow_jpnew_w.ads_kpi_hourly_hi
 (date, hour, zone_id, channel, os, 
-exchange_rate, new_users, 
-active_users_error, active_users, dau, 
+new_users, active_users_error, active_users, dau, 
 pay_users, new_users_pay, users_new_pay,
-pay_count_hourly, money_rmb_hourly, 
-new_users_ac, moneyrmb_ac, 
-part_date)
+pay_count_hourly, money_hourly, 
+newusers_ac, money_ac, part_date)
 
 with user_hourly as
 (select date, part_date, hour, 
 date_format(hour, '%H') as hour_pure, 
-exchange_rate, 
-role_id, pay_count, money, money_rmb, last_event
+role_id, pay_count, money, last_event
 from hive.dow_jpnew_w.dws_user_hourly_hi
 where part_date >= cast(date_add('day', -1, date($start_date)) as varchar)
 and part_date <= $end_date
@@ -45,13 +41,9 @@ and part_date <= $end_date
 
 user_hourly_join as
 (select a.date, a.hour, a.hour_pure, a.part_date,
-a.role_id, a.exchange_rate, 
-a.pay_count as pay_count_hourly,
-a.money as money_hourly, 
-a.money_rmb as money_rmb_hourly, 
-a.last_event,
-b.install_date, date(b.lastlogin_ts) as lastlogin_date, 
-b.moneyrmb_ac, b.firstpay_ts, b.firstpay_goodid, b.firstpay_level,
+a.role_id, a.pay_count as pay_count_hourly, a.money as money_hourly, 
+a.last_event, b.install_date, date(b.lastlogin_ts) as lastlogin_date, 
+b.money_ac, b.firstpay_ts, b.firstpay_goodid, b.firstpay_level,
 b.zone_id, b.channel, b.os, 
 date_diff('hour', date_trunc('hour', b.install_ts), a.hour) as retention_hour,
 date_diff('hour', date_trunc('hour', b.firstpay_ts), a.hour) as pay_retention_hour
@@ -63,16 +55,16 @@ where b.is_test is null
 
 hourly_info as
 (select date, part_date, hour, hour_pure, 
-zone_id, channel, os, exchange_rate, 
+zone_id, channel, os,
 count(distinct (case when retention_hour = 0 then role_id else null end)) as new_users,
 count(distinct role_id) as active_users_error,
 count(distinct (case when money_hourly > 0 then role_id else null end)) as pay_users,
 count(distinct (case when money_hourly > 0 and retention_hour = 0 and pay_retention_hour = 0 then role_id else null end)) as new_users_pay,
 count(distinct (case when money_hourly > 0 and pay_retention_hour = 0 then role_id else null end)) as users_new_pay, 
 sum(pay_count_hourly) as pay_count_hourly, 
-sum(money_rmb_hourly) as money_rmb_hourly
+sum(money_hourly) as money_hourly
 from user_hourly_join
-group by 1, 2, 3, 4, 5, 6, 7, 8
+group by 1, 2, 3, 4, 5, 6, 7
 ), 
 
 daily_info as(
@@ -116,19 +108,19 @@ group by 1, 2, 3, 4
 
 data_cube as(
 select *, cast(concat(part_date, ' ', hour_pure, ':00:00') as timestamp) as hour from
-(select distinct date, part_date, zone_id, channel, os, exchange_rate from hourly_info)
+(select distinct date, part_date, zone_id, channel, os from hourly_info)
 cross join
 (select distinct hour_pure from hourly_info)
 ),
 
 hourly_info_final as(
 select a.date, a.part_date, a.hour, a.hour_pure, a.zone_id, a.channel, a.os, 
-a.exchange_rate, d.dau, c.active_users, 
+d.dau, c.active_users, 
 b.new_users, b.active_users_error, 
 b.pay_users, b.new_users_pay, b.users_new_pay, 
-b.pay_count_hourly, b.money_rmb_hourly, 
-sum(b.new_users) over (partition by a.zone_id, a.channel, a.os, a.date order by a.hour rows between unbounded preceding and current row) as new_users_ac,
-sum(b.money_rmb_hourly) over (partition by a.zone_id, a.channel, a.os, a.date order by a.hour rows between unbounded preceding and current row) as moneyrmb_ac, 
+b.pay_count_hourly, b.money_hourly, 
+sum(b.new_users) over (partition by a.zone_id, a.channel, a.os, a.date order by a.hour rows between unbounded preceding and current row) as newusers_ac,
+sum(b.money_hourly) over (partition by a.zone_id, a.channel, a.os, a.date order by a.hour rows between unbounded preceding and current row) as money_ac, 
 (case when a.date = current_date and a.hour >= localtimestamp then 0 else 1 end) as is_select
 from data_cube a
 left join hourly_info b
@@ -150,12 +142,10 @@ and a.hour_pure = '00'
 )
 
 select date, hour, zone_id, channel, os, 
-exchange_rate, new_users, 
-active_users_error, active_users, dau, 
+new_users, active_users_error, active_users, dau, 
 pay_users, new_users_pay, users_new_pay,
-pay_count_hourly, money_rmb_hourly, 
-new_users_ac, moneyrmb_ac, 
-part_date
+pay_count_hourly, money_hourly, 
+newusers_ac, money_ac, part_date
 from hourly_info_final
 where part_date >= $start_date
 and part_date <= $end_date
