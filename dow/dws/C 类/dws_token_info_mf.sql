@@ -3,7 +3,7 @@ drop table if exists hive.dow_jpnew_w.dws_token_info_mf;
 create table if not exists hive.dow_jpnew_w.dws_token_info_mf(
 cal_month date,
 role_id varchar, 
-money_rmb decimal(32, 4),
+money decimal(32, 4),
 token_get_by_pay bigint,
 token_get bigint,
 token_cost bigint,
@@ -14,28 +14,17 @@ price decimal(32, 4)
 
 insert into hive.dow_jpnew_w.dws_token_info_mf(
 cal_month, role_id, 
-money_rmb, token_get_by_pay,
+money, token_get_by_pay,
 token_get, token_cost, token_end, token_end_lastmonth, price
 )
 
-with currency_rate as(
-select currency, currency_time, rate as exchange_rate
-from mysql_bi_r."gbsp-bi-bigdata".t_currency_rate
-where currency = 'JPY'
-), 
-
-event_pay_token_web as(
+with event_pay_token_web as(
 select part_date, event_name, event_time, 
 date(event_time) as date, 
 date_trunc('month', date(event_time)) as month, 
 role_id, payment_itemid, 
-a.currency, money, b.exchange_rate, 
-cast(money * b.exchange_rate * 0.01 as decimal(32, 4)) money_rmb,
-cast(split_part(payment_itemid, ';', 2) as bigint) as token_num,
-part_date
-from hive.dow_jpnew_r.dwd_gserver_payment_live a
-left join currency_rate b
-on date_format(a.event_time, '%Y-%m') = b.currency_time 
+currency, money, cast(split_part(payment_itemid, ';', 2) as bigint) as token_num, part_date
+from hive.dow_jpnew_r.dwd_gserver_payment_live
 where part_date >= '2024-05-01' and part_date <= cast(current_date as varchar)
 and pay_source = 'web'
 ),
@@ -56,13 +45,8 @@ select part_date, event_name, event_time,
 date(event_time) as date, 
 date_trunc('month', date(event_time)) as month, 
 role_id, a.payment_itemid, 
-a.currency, money, b.exchange_rate, 
-cast(money * b.exchange_rate / 100 as decimal(32, 4)) money_rmb,
-c.token_num,
-part_date
+a.currency, money, c.token_num, part_date
 from hive.dow_jpnew_r.dwd_gserver_payment_live a
-left join currency_rate b
-on date_format(a.event_time, '%Y-%m') = b.currency_time 
 left join good_config_app c
 on a.payment_itemid = c.payment_itemid
 where part_date >= '2024-05-01' and part_date <= cast(current_date as varchar)
@@ -77,8 +61,8 @@ select * from event_pay_token_app
 
 user_daily_info_pay as(
 select month, role_id, 
-sum(money_rmb) as money_rmb, 
-count(money_rmb) as pay_count,
+sum(money) as money, 
+count(money) as pay_count,
 sum(token_num) as token_get_by_pay
 from event_pay_token
 group by 1, 2
@@ -136,7 +120,7 @@ cross join unnest(sequence(a.start_month, date_trunc('month', current_date), int
 
 user_month_info as
 (select a.cal_month, a.role_id, 
-c.money_rmb, c.token_get_by_pay,
+c.money, c.token_get_by_pay,
 b.token_get, b.token_cost, 
 coalesce(b.token_end, lag(b.token_end, 1, null) ignore nulls over(partition by a.role_id order by a.cal_month)) as token_end 
 from month_cube a
@@ -147,8 +131,8 @@ on a.cal_month = c.month and a.role_id = c.role_id
 )
 
 select cal_month, role_id, 
-money_rmb, token_get_by_pay,
+money, token_get_by_pay,
 token_get, token_cost, token_end, 
 lag(token_end, 1) over (order by cal_month) as token_end_lastmonth,
-money_rmb / (token_get + lag(token_end, 1, 0) over (order by cal_month)) as price
+money / (token_get + lag(token_end, 1, 0) over (order by cal_month)) as price
 from user_month_info

@@ -22,15 +22,10 @@ dau, last7_dau, last30_dau,
 part_date)
 
 with user_daily as(
-select 
-date, part_date,
-role_id, 
-level_min as level_min_daily, level_max as level_max_daily,
-viplevel_min as viplevel_min_daily, viplevel_max as viplevel_max_daily,
-money as money_daily, 
-money_rmb as money_rmb_daily, exchange_rate
+select date, part_date, role_id, 
+level_min, level_max, viplevel_min, viplevel_max, money
 from hive.dow_jpnew_w.dws_user_daily_di 
-where part_date >= date_format(date_add('day', -40, date($start_date)), '%Y-%m-%d')
+where part_date >= date_format(date_add('day', -31, date($start_date)), '%Y-%m-%d')
 and part_date <= $end_date
 ), 
 
@@ -38,21 +33,19 @@ user_daily_join as
 (select 
 a.date, a.part_date,
 a.role_id, 
-a.level_min_daily, a.level_max_daily,
-a.viplevel_min_daily, a.viplevel_max_daily,
-a.money_daily, a.money_rmb_daily, a.exchange_rate,
+a.level_min, a.level_max, b.level, 
+a.viplevel_min, a.viplevel_max, b.vip_level, a.money, 
 b.install_date, date(b.lastlogin_ts) as lastlogin_date, 
-b.moneyrmb_ac, b.firstpay_date, b.firstpay_goodid, b.firstpay_level,
+b.firstpay_date, b.firstpay_goodid, b.firstpay_level,
 b.zone_id, b.channel, b.os, 
 date_diff('day', b.install_date, a.date) as retention_day,
 date_diff('day', b.firstpay_date, a.date) as pay_retention_day,
-date_diff('day', b.install_date, firstpay_date) as firstpay_interval_days, 
-b.level, b.vip_level
+date_diff('day', b.install_date, firstpay_date) as firstpay_interval_days
 from user_daily a
 left join hive.dow_jpnew_w.dws_user_info_di b
 on a.role_id = b.role_id
 where b.is_test is null
-),
+), 
 
 date_cube as(
 select distinct date, part_date

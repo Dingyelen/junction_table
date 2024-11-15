@@ -26,34 +26,27 @@ where part_date >= date_format(date_add('day', -15, date($end_date)), '%Y-%m-%d'
 and part_date <= $end_date
 ), 
 
-team_hero_res as(
-select date, part_date, role_id, zone_id, vip_level, event_time, 
-transform(team1_status, x -> x.hero_id) as team1_status, 
-transform(team2_status, x -> x.hero_id) as team2_status, 
-transform(team3_status, x -> x.hero_id) as team3_status
-from data_log 
-), 
-
 union_log as(
 select *, row_number() over(order by event_time) as rn from (
-select date, part_date, role_id, zone_id, vip_level, event_time, team1_status as team_status from team_hero_res
+select date, part_date, role_id, zone_id, vip_level, event_time, team1_status as team_status from data_log
 union all
-select date, part_date, role_id, zone_id, vip_level, event_time, team2_status as team_status from team_hero_res
+select date, part_date, role_id, zone_id, vip_level, event_time, team2_status as team_status from data_log
 union all
-select date, part_date, role_id, zone_id, vip_level, event_time, team3_status as team_status from team_hero_res
+select date, part_date, role_id, zone_id, vip_level, event_time, team3_status as team_status from data_log
 )), 
 
-unnest_log as(
-select date, part_date, role_id, zone_id, vip_level, event_time, team_status, rn, 
-cast(hero_id as varchar) as hero_id
-from union_log, unnest(team_status) as t(hero_id)
+team_hero_res as(
+select date, part_date, role_id, zone_id, vip_level, event_time, rn, 
+team_status, json_value(hero_detail, 'lax $.hero_id') as hero_id
+from union_log
+cross join unnest(team_status) t(hero_detail)
 ), 
 
 trans_log as(
 select date, part_date, role_id, zone_id, vip_level, event_time, team_status, rn, 
 a.hero_id, b.hero_cn, 
 concat(a.hero_id, '_', b.hero_cn) as hero_status
-from unnest_log a
+from team_hero_res a
 left join hive.dow_jpnew_w.dim_gserver_levelup_heroid b
 on a.hero_id = b.hero_id
 ), 
@@ -75,4 +68,4 @@ select zone_id, vip_level, hero_status,
 count(distinct role_id) as users, 
 count(*) as pvp_count
 from array_sort
-group by 1, 2, 3
+group by 1, 2, 3;
