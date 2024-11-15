@@ -7,8 +7,8 @@ install_date date,
 lastlogin_date date,
 level_max bigint,
 viplevel_max bigint,
-money_rmb decimal(36, 2),
-moneyrmb_ac decimal(36, 2),
+money decimal(36, 2),
+money_ac decimal(36, 2),
 pay_rank bigint,
 login_time bigint,
 part_date varchar
@@ -21,7 +21,7 @@ insert into hive.dow_jpnew_w.ads_top_daily_di
 (date, role_id, zone_id, 
 channel, install_date, lastlogin_date, 
 level_max, viplevel_max, 
-money_rmb, moneyrmb_ac, pay_rank, login_time, 
+money, money_ac, pay_rank, login_time, 
 part_date)
 
 with user_daily as(
@@ -29,8 +29,7 @@ select
 date, part_date, role_id, 
 level_min, level_max,
 viplevel_min, viplevel_max, 
-online_time, exchange_rate, 
-pay_count, money, money_rmb, web_rmb
+online_time, pay_count, money, app_money, web_money
 from hive.dow_jpnew_w.dws_user_daily_di 
 where part_date >= date_format(date_add('day', -7, date $start_date), '%Y-%m-%d')
 and part_date <= $end_date
@@ -42,13 +41,12 @@ a.date, a.part_date,
 a.role_id, 
 a.level_min, a.level_max,
 a.viplevel_min, a.viplevel_max, 
-a.online_time, 
-a.exchange_rate, a.pay_count, a.money, a.money_rmb, a.web_rmb, 
-b.moneyrmb_ac, b.is_new, 
+a.online_time, a.pay_count, a.money, a.web_money, 
+b.money_ac, b.is_new, 
 c.install_date, date(c.lastlogin_ts) as lastlogin_date, 
 c.firstpay_date, c.firstpay_goodid, c.firstpay_level,
 c.zone_id, c.channel, c.os, 
-rank() over(partition by a.date order by money_rmb desc) as pay_rank
+rank() over(partition by a.date order by money desc) as pay_rank
 from user_daily a
 left join hive.dow_jpnew_w.dws_user_daily_derive_di b
 on a.role_id = b.role_id and a.part_date = b.part_date
@@ -76,7 +74,7 @@ select
 a.date, a.role_id, a.zone_id, 
 a.channel, a.install_date, a.lastlogin_date, 
 a.level_max, a.viplevel_max, 
-a.money_rmb, a.moneyrmb_ac, a.pay_rank, b.login_time, a.part_date
+a.money, a.money_ac, a.pay_rank, b.login_time, a.part_date
 from user_daily_join a
 left join date_cube_agg b
 on a.role_id = b.role_id and a.date = b.date
