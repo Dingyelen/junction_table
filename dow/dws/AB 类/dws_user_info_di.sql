@@ -36,6 +36,9 @@ is_paid bigint,
 money_ac decimal(36, 2),
 appmoney_ac decimal(36, 2),
 webmoney_ac decimal(36, 2),
+moneyrmb_ac decimal(36, 2),
+appmoneyrmb_ac decimal(36, 2),
+webmoneyrmb_ac decimal(36, 2),
 pay_count bigint,
 app_count bigint,
 web_count bigint,
@@ -83,6 +86,7 @@ currency, firstpay_ts, firstpay_date,
 firstpay_level, firstpay_goodid, firstpay_money, 
 lastpay_ts, lastpay_level, lastpay_goodid, lastpay_money, is_paid, 
 money_ac, appmoney_ac, webmoney_ac, 
+moneyrmb_ac, appmoneyrmb_ac, webmoneyrmb_ac, 
 pay_count, app_count, web_count, 
 sincetimes_add, sincetimes_cost, sincetimes_end, 
 core_add, core_cost, core_end, 
@@ -93,8 +97,11 @@ login_days, login_times, online_time
 )
 
 with user_daily as(
-select *
-from hive.dow_jpnew_w.dws_user_daily_di
+select a.*, 
+a.money * b.rate as moneyrmb_ac, app_money * b.rate as appmoneyrmb_ac, web_money * b.rate as webmoneyrmb_ac
+from hive.dow_jpnew_w.dws_user_daily_di a
+left join mysql_bi_r."gbsp-bi-bigdata".t_currency_rate b
+on a.currency = b.currency and date_format(a.date, '%Y-%m') = b.currency_time 
 where role_id in 
 (select distinct role_id 
 from hive.dow_jpnew_w.dws_user_daily_di 
@@ -117,6 +124,9 @@ sum(login_times) as login_times,
 sum(money) as money_ac, 
 sum(app_money) as appmoney_ac, 
 sum(web_money) as webmoney_ac, 
+sum(moneyrmb_ac) as moneyrmb_ac, 
+sum(appmoneyrmb_ac) as appmoneyrmb_ac, 
+sum(webmoneyrmb_ac) as webmoneyrmb_ac, 
 sum(pay_count) as pay_count, 
 sum(app_count) as app_count, 
 sum(web_count) as web_count, 
@@ -181,6 +191,7 @@ a.firstpay_level, b.firstpay_goodid, b.firstpay_money,
 a.lastpay_ts, a.lastpay_level, b.lastpay_goodid, b.lastpay_money, 
 (case when money_ac > 0 then 1 else 0 end) as is_paid, 
 a.money_ac, a.appmoney_ac, a.webmoney_ac, 
+a.moneyrmb_ac, a.appmoneyrmb_ac, a.webmoneyrmb_ac, 
 a.pay_count, a.app_count, a.web_count, 
 a.sincetimes_add, a.sincetimes_cost, b.sincetimes_end, 
 a.core_add, a.core_cost, b.core_end, 
