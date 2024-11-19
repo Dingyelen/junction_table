@@ -76,40 +76,25 @@ and dws_user_daily_di.part_date >= '$start_date'
 and dws_user_daily_di.part_date <= '$end_date'
 );
 
-insert into hive.dow_jpnew_w.dws_user_info_di(
-role_id, device_id, open_id, adid, 
-zone_id, alliance_id, os, channel, 
-ip, country, network, campaign, creative, adgroup, 
-campaign_id, creative_id, adgroup_id, adcost, 
-is_test, install_ts, install_date, lastlogin_ts, 
-currency, firstpay_ts, firstpay_date, 
-firstpay_level, firstpay_goodid, firstpay_money, 
-lastpay_ts, lastpay_level, lastpay_goodid, lastpay_money, is_paid, 
-money_ac, appmoney_ac, webmoney_ac, 
-moneyrmb_ac, appmoneyrmb_ac, webmoneyrmb_ac, 
-pay_count, app_count, web_count, 
-sincetimes_add, sincetimes_cost, sincetimes_end, 
-core_add, core_cost, core_end, 
-free_add, free_cost, free_end, 
-paid_add, paid_cost, paid_end, 
-vip_level, level, rank, power, 
-login_days, login_times, online_time
-)
+drop table if exists hive.dow_jpnew_w.temp_user_daily;
 
-with user_daily as(
+create table if not exists hive.dow_jpnew_w.temp_user_daily as
 select a.*, 
 a.money * b.rate as moneyrmb_ac, app_money * b.rate as appmoneyrmb_ac, web_money * b.rate as webmoneyrmb_ac
 from hive.dow_jpnew_w.dws_user_daily_di a
 left join mysql_bi_r."gbsp-bi-bigdata".t_currency_rate b
 on a.currency = b.currency and date_format(a.date, '%Y-%m') = b.currency_time 
-where role_id in 
-(select distinct role_id 
-from hive.dow_jpnew_w.dws_user_daily_di 
+where exists
+(select 1
+from hive.dow_jpnew_w.dws_user_daily_di z
 where part_date >= $start_date
-and  part_date <= $end_date)
-), 
+and  part_date <= $end_date
+and a.role_id = z.role_id
+);
 
-user_info as(
+drop table if exists hive.dow_jpnew_w.temp_user_info;
+
+create table if not exists hive.dow_jpnew_w.temp_user_info as
 select role_id, 
 max(is_test) as is_test,
 min(first_ts) as install_ts,
@@ -142,11 +127,12 @@ min(firstpay_ts) as firstpay_ts,
 min(firstpay_level) as firstpay_level, 
 max(lastpay_ts) as lastpay_ts, 
 max(lastpay_level) as lastpay_level
-from user_daily 
-group by 1
-), 
+from hive.dow_jpnew_w.temp_user_daily 
+group by 1;
 
-user_first_info as(
+drop table if exists hive.dow_jpnew_w.temp_user_first_info;
+
+create table if not exists hive.dow_jpnew_w.temp_user_first_info as
 select distinct role_id, 
 first_value(device_id) ignore nulls over(partition by role_id order by part_date rows between unbounded preceding and unbounded following) as device_id,
 first_value(open_id) ignore nulls over(partition by role_id order by part_date rows between unbounded preceding and unbounded following) as open_id,
@@ -173,7 +159,26 @@ last_value(sincetimes_end) ignore nulls over(partition by role_id order by part_
 last_value(core_end) ignore nulls over(partition by role_id order by part_date rows between unbounded preceding and unbounded following) as core_end,
 last_value(free_end) ignore nulls over(partition by role_id order by part_date rows between unbounded preceding and unbounded following) as free_end,
 last_value(paid_end) ignore nulls over(partition by role_id order by part_date rows between unbounded preceding and unbounded following) as paid_end
-from user_daily 
+from hive.dow_jpnew_w.temp_user_daily;
+
+insert into hive.dow_jpnew_w.dws_user_info_di(
+role_id, device_id, open_id, adid, 
+zone_id, alliance_id, os, channel, 
+ip, country, network, campaign, creative, adgroup, 
+campaign_id, creative_id, adgroup_id, adcost, 
+is_test, install_ts, install_date, lastlogin_ts, 
+currency, firstpay_ts, firstpay_date, 
+firstpay_level, firstpay_goodid, firstpay_money, 
+lastpay_ts, lastpay_level, lastpay_goodid, lastpay_money, is_paid, 
+money_ac, appmoney_ac, webmoney_ac, 
+moneyrmb_ac, appmoneyrmb_ac, webmoneyrmb_ac, 
+pay_count, app_count, web_count, 
+sincetimes_add, sincetimes_cost, sincetimes_end, 
+core_add, core_cost, core_end, 
+free_add, free_cost, free_end, 
+paid_add, paid_cost, paid_end, 
+vip_level, level, rank, power, 
+login_days, login_times, online_time
 )
 
 select 
@@ -199,7 +204,11 @@ a.free_add, a.free_cost, b.free_end,
 a.paid_add, a.paid_cost, b.paid_end, 
 a.vip_level, a.level, a.rank, a.power, 
 a.login_days, a.login_times, a.online_time
-from user_info a
-left join user_first_info b
+from hive.dow_jpnew_w.temp_user_info a
+left join hive.dow_jpnew_w.temp_user_first_info b
 on a.role_id = b.role_id;
+
+drop table if exists hive.dow_jpnew_w.temp_user_daily;
+drop table if exists hive.dow_jpnew_w.temp_user_info;
+drop table if exists hive.dow_jpnew_w.temp_user_first_info;
 ###
