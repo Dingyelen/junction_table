@@ -12,6 +12,8 @@ os varchar,
 dau bigint, 
 paycount_daily bigint, 
 money_daily decimal(36, 2), 
+newuser_lasthour bigint, 
+dau_lasthour bigint, 
 money_lasthour decimal(36, 2), 
 new_users bigint,
 active_users_error bigint,
@@ -29,7 +31,7 @@ with(partitioned_by = array['part_date']);
 
 insert into hive.dow_jpnew_w.ads_kpi_hourly_hf
 (date, hour, zone_id, channel, os, 
-dau, paycount_daily, money_daily, money_lasthour,  
+dau, paycount_daily, money_daily, newuser_lasthour, dau_lasthour, money_lasthour,  
 new_users, active_users_error, active_users, 
 pay_users, install_pay, newpay_users,
 pay_count, money, 
@@ -77,7 +79,9 @@ select date, zone_id, channel, os,
 count(distinct role_id) as dau, 
 sum(pay_count) as paycount_daily, 
 sum(money) as money_daily, 
-sum(case when cast(hour_pure as bigint) <= cast(date_format(current_timestamp, '%H') as bigint) then money else null end) as money_lasthour 
+count(distinct case when cast(hour_pure as bigint) <= cast(date_format(current_timestamp, '%H') as bigint) and retention_hour = 0 then role_id else null end) as newuser_lasthour,  
+count(distinct case when cast(hour_pure as bigint) <= cast(date_format(current_timestamp, '%H') as bigint) then role_id else null end) as dau_lasthour,  
+sum(case when cast(hour_pure as bigint) <= cast(date_format(current_timestamp, '%H') as bigint) then money else null end) as money_lasthour
 from user_hourly_join 
 group by 1, 2, 3, 4
 ), 
@@ -123,7 +127,7 @@ cross join unnest(sequence(hour, date_add('day', $interval_day, hour), interval 
 
 hourly_info_final as(
 select a.date, a.part_date, a.hour, a.hour_pure, a.zone_id, a.channel, a.os, 
-d.dau, d.paycount_daily, d.money_daily, d.money_lasthour, 
+d.dau, d.paycount_daily, d.money_daily, d.newuser_lasthour, d.dau_lasthour, d.money_lasthour, 
 b.new_users, b.active_users_error, c.active_users, 
 b.pay_users, b.install_pay, b.newpay_users, 
 b.pay_count, b.money, 
@@ -149,7 +153,7 @@ and a.hour_pure = '00'
 )
 
 select date, hour, zone_id, channel, os, 
-dau, paycount_daily, money_daily, money_lasthour,  
+dau, paycount_daily, money_daily, newuser_lasthour, dau_lasthour, money_lasthour,  
 new_users, active_users_error, active_users, 
 pay_users, install_pay, newpay_users,
 pay_count, money, 

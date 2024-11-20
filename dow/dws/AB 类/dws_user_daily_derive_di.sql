@@ -32,7 +32,14 @@ sincetimes_end, core_end, free_end, paid_end,
 before_date, after_date, part_date
 )
 
-with user_daily as(
+with active_role as(
+select distinct role_id
+from hive.dow_jpnew_w.dws_user_daily_di
+where part_date >= $start_date 
+and part_date <= $end_date
+), 
+
+user_daily as(
 select date, role_id, 
 row_number() over(partition by role_id order by part_date) as login_days, 
 firstpay_ts, money, app_money, web_money, 
@@ -40,7 +47,7 @@ sincetimes_end, core_end, free_end, paid_end,
 part_date
 from hive.dow_jpnew_w.dws_user_daily_di a
 where exists
-(select 1 from hive.dow_jpnew_w.dws_user_daily_di b
+(select 1 from active_role b
 where a.role_id = b.role_id)
 ), 
 
