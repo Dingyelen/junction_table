@@ -55,9 +55,7 @@ part_date
 from hive.dow_jpnew_w.dws_user_daily_di a
 where exists
 (select 1 from hive.dow_jpnew_w.dws_user_daily_di b
-where b.part_date >= $start_date
-and  b.part_date <= $end_date
-and a.role_id = b.role_id)
+where a.role_id = b.role_id)
 ), 
 
 daily_cal as(
@@ -68,7 +66,7 @@ min(firstpay_ts) over(partition by role_id order by part_date rows between unbou
 sum(money) over(partition by role_id order by part_date rows between unbounded preceding and current row) as money_ac, 
 sum(app_money) over(partition by role_id order by part_date rows between unbounded preceding and current row) as appmoney_ac, 
 sum(web_money) over(partition by role_id order by part_date rows between unbounded preceding and current row) as webmoney_ac, 
-last_value(sincetimes_end) ignore nulls over(partition by role_id order by part_date rows between unbounded preceding and current row) as sincetimes_end, 
+last_value(sincetimes_end) ignore nulls over(partition by role_id order by part_date rows between unbounded preceding and current row) as sincetimes_end,
 last_value(core_end) ignore nulls over(partition by role_id order by part_date rows between unbounded preceding and current row) as core_end, 
 last_value(free_end) ignore nulls over(partition by role_id order by part_date rows between unbounded preceding and current row) as free_end, 
 last_value(paid_end) ignore nulls over(partition by role_id order by part_date rows between unbounded preceding and current row) as paid_end, 
@@ -98,5 +96,5 @@ sincetimes_end, core_end, free_end, paid_end,
 before_date, after_date, part_date
 from daily_boolean_cal
 where part_date >= $start_date
-and  part_date <= $end_date
+and part_date <= $end_date
 ###
