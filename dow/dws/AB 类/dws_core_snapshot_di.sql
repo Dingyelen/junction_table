@@ -72,9 +72,7 @@ from core_log_base
 
 core_cal_log as(
 select part_date, event_name, 
-role_id, open_id, adid, 
-zone_id, alliance_id, app_id, 
-vip_level, level, rank_level, reason, 
+role_id, reason, 
 sum(free_add) as free_add,
 sum(paid_add) as paid_add,
 sum(core_add) as core_add,
@@ -82,7 +80,7 @@ sum(free_cost) as free_cost,
 sum(paid_cost) as paid_cost,
 sum(core_cost) as core_cost
 from core_log
-group by 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12
+group by 1, 2, 3, 4
 ), 
 
 daily_gserver_info as(
