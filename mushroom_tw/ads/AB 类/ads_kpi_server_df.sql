@@ -1,6 +1,6 @@
-drop table if exists hive.dow_jpnew_w.ads_kpi_server_df;
+drop table if exists hive.mushroom_tw_w.ads_kpi_server_df;
 
-create table if not exists hive.dow_jpnew_w.ads_kpi_server_df(
+create table if not exists hive.mushroom_tw_w.ads_kpi_server_df(
 zone_id varchar, 
 open_date date, 
 yesterday_new_users bigint,
@@ -21,7 +21,7 @@ paytop_level bigint,
 paytop_moneyrmb decimal(36, 2)
 );
 
-insert into hive.dow_jpnew_w.ads_kpi_server_df(
+insert into hive.mushroom_tw_w.ads_kpi_server_df(
 zone_id, open_date, 
 yesterday_new_users, yesterday_active_users, yesterday_moneyrmb, 
 new_users, active_users, money, money_rmb,
@@ -33,7 +33,7 @@ paytop_roleid, paytop_level, paytop_moneyrmb
 with server_daily as(
 select date, part_date, zone_id, open_date, 
 new_users, active_users, firstpay_users, money, money_rmb, pay_count, newusers_ac, money_ac, moneyrmb_ac
-from hive.dow_jpnew_w.dws_server_daily_df
+from hive.mushroom_tw_w.dws_server_daily_df
 where part_date >= date_format(date_add('day', -15, current_date), '%Y-%m-%d')
 and part_date <= date_format(current_date, '%Y-%m-%d')
 ), 
@@ -67,7 +67,7 @@ zone_id, role_id,
 level, moneyrmb_ac, 
 row_number() over(partition by zone_id order by level desc, money_ac desc) as level_desc, 
 row_number() over(partition by zone_id order by money_ac desc, level desc) as money_desc
-from hive.dow_jpnew_w.dws_user_info_di
+from hive.mushroom_tw_w.dws_user_info_di
 ), 
 
 user_level_select as(

@@ -1,4 +1,4 @@
-create table if not exists hive.dow_jpnew_w.ads_user_retention_di
+create table if not exists hive.mushroom_tw_w.ads_user_retention_di
 (date date, 
 install_date date,
 zone_id varchar,
@@ -20,11 +20,11 @@ part_date varchar
 )
 with(partitioned_by = array['part_date']);
 
-delete from hive.dow_jpnew_w.ads_user_retention_di
+delete from hive.mushroom_tw_w.ads_user_retention_di
 where part_date >= $start_date
 and part_date <= $end_date;
 
-insert into hive.dow_jpnew_w.ads_user_retention_di
+insert into hive.mushroom_tw_w.ads_user_retention_di
 (date, install_date, zone_id, channel, os, break_type, retention_day, 
 active_users, pay_users, newpay_users, money, money_rmb, online_time, 
 payuser_ac, money_ac, moneyrmb_ac, 
@@ -34,7 +34,7 @@ with user_daily as(
 select date, part_date, role_id, 
 level_min, level_max, viplevel_min, viplevel_max, 
 currency, money, online_time
-from hive.dow_jpnew_w.dws_user_daily_di 
+from hive.mushroom_tw_w.dws_user_daily_di 
 ), 
 
 user_daily_join as(
@@ -51,7 +51,7 @@ date_diff('day', b.install_date, a.date) as retention_day,
 date_diff('day', b.firstpay_date, a.date) as pay_retention_day,
 date_diff('day', b.install_date, firstpay_date) as firstpay_interval_days
 from user_daily a
-left join hive.dow_jpnew_w.dws_user_info_di b
+left join hive.mushroom_tw_w.dws_user_info_di b
 on a.role_id = b.role_id
 left join mysql_bi_r."gbsp-bi-bigdata".t_currency_rate z
 on a.currency = z.currency and date_format(a.date, '%Y-%m') = z.currency_time 

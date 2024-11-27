@@ -1,19 +1,19 @@
 ###
-drop table if exists hive.dow_jpnew_w.ads_item_end_df;
+drop table if exists hive.mushroom_tw_w.ads_item_end_df;
 
-create table if not exists hive.dow_jpnew_w.ads_item_end_df
+create table if not exists hive.mushroom_tw_w.ads_item_end_df
 (role_id varchar,
 item_end bigint,
 item_id varchar
 )
 with(partitioned_by = array['item_id']);
 
-insert into hive.dow_jpnew_w.ads_item_end_df
+insert into hive.mushroom_tw_w.ads_item_end_df
 (role_id, item_end, item_id)
 
 with dws_item_daily as(
 select date, role_id, item_detail, part_date
-from hive.dow_jpnew_w.dws_item_snapshot_di
+from hive.mushroom_tw_w.dws_item_snapshot_di
 ),
 
 dws_unnest as(
@@ -50,7 +50,7 @@ date_diff('day', b.install_date, a.date) as retention_day,
 date_diff('day', b.firstpay_date, a.date) as pay_retention_day,
 date_diff('day', b.install_date, b.firstpay_date) as firstpay_interval_days
 from dws_select a
-left join hive.dow_jpnew_w.dws_user_info_di b
+left join hive.mushroom_tw_w.dws_user_info_di b
 on a.role_id = b.role_id
 ),
 

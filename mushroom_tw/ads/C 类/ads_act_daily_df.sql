@@ -1,6 +1,6 @@
-drop table if exists hive.dow_jpnew_w.ads_act_daily_df;
+drop table if exists hive.mushroom_tw_w.ads_act_daily_df;
 
-create table if not exists hive.dow_jpnew_w.ads_act_daily_df(
+create table if not exists hive.mushroom_tw_w.ads_act_daily_df(
 date date, 
 part_date varchar, 
 zone_id varchar, 
@@ -13,7 +13,7 @@ item_cost bigint,
 is_act bigint
 );
 
-insert into hive.dow_jpnew_w.ads_act_daily_df(
+insert into hive.mushroom_tw_w.ads_act_daily_df(
 date, part_date, zone_id, act_tag, retention_day, 
 active_users, money, act_money, item_cost, is_act
 )
@@ -21,8 +21,8 @@ active_users, money, act_money, item_cost, is_act
 with daily_info as(
 select date, part_date, a.role_id, b.zone_id, 
 money
-from hive.dow_jpnew_w.dws_user_daily_di a
-left join hive.dow_jpnew_w.dws_user_info_di b
+from hive.mushroom_tw_w.dws_user_daily_di a
+left join hive.mushroom_tw_w.dws_user_info_di b
 on a.role_id = b.role_id
 where b.is_test is null
 and (part_date between '2024-01-13' and '2024-01-19'
@@ -40,7 +40,7 @@ else 'unknow' end) as act_tag,
 cast(zone_id as varchar) as zone_id, 
 role_id, open_id, null as adid, 
 item_id, item_num as item_cost
-from hive.dow_jpnew_r.dwd_gserver_itemchange_live
+from hive.mushroom_tw_r.dwd_gserver_itemchange_live
 where (part_date between '2024-01-13' and '2024-01-19'
 or part_date between '2024-04-21' and '2024-04-25'
 or part_date between '2024-05-06' and '2024-05-09')
@@ -65,7 +65,7 @@ else 'unknow' end) as act_tag,
 role_id, open_id, null as adid, 
 zone_id, vip_level, level, 
 payment_itemid, money
-from hive.dow_jpnew_r.dwd_gserver_payment_live
+from hive.mushroom_tw_r.dwd_gserver_payment_live
 where payment_itemid in ('gold_350', 'gold_351', 'gold_352', 'gold_353')
 and (part_date between '2024-01-13' and '2024-01-19'
 or part_date between '2024-04-21' and '2024-04-25'

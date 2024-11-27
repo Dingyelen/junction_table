@@ -1,5 +1,5 @@
 ###
-create table if not exists hive.dow_jpnew_w.ads_item_di
+create table if not exists hive.mushroom_tw_w.ads_item_di
 (date date,
 zone_id varchar,
 channel varchar,
@@ -12,19 +12,19 @@ part_date varchar
 )
 with(partitioned_by = array['part_date']);
 
-delete from hive.dow_jpnew_w.ads_item_di
+delete from hive.mushroom_tw_w.ads_item_di
 where part_date >= $start_date
 and part_date <= $end_date;
 
-insert into hive.dow_jpnew_w.ads_item_di
+insert into hive.mushroom_tw_w.ads_item_di
 (date, zone_id, channel, vip_level, 
 item_id, item_add, item_cost, users,
 part_date)
 
 with dws_item_daily as(
 select a.date, a.role_id, item_detail, part_date
-from hive.dow_jpnew_w.dws_item_snapshot_di a
-left join hive.dow_jpnew_w.dws_user_info_di b
+from hive.mushroom_tw_w.dws_item_snapshot_di a
+left join hive.mushroom_tw_w.dws_user_info_di b
 on a.role_id = b.role_id
 where part_date>=$start_date
 and part_date<=$end_date
@@ -56,7 +56,7 @@ date_diff('day', b.install_date, a.date) as retention_day,
 date_diff('day', b.firstpay_date, a.date) as pay_retention_day,
 date_diff('day', b.install_date, b.firstpay_date) as firstpay_interval_days
 from dws_detail a
-left join hive.dow_jpnew_w.dws_user_info_di b
+left join hive.mushroom_tw_w.dws_user_info_di b
 on a.role_id = b.role_id
 ),
 

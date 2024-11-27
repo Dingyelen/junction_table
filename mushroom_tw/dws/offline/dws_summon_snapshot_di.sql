@@ -1,5 +1,5 @@
 ###
-create table if not exists hive.dow_jpnew_w.dws_summon_snapshot_di(
+create table if not exists hive.mushroom_tw_w.dws_summon_snapshot_di(
 date date, 
 role_id varchar, 
 summon_detail array(varchar), 
@@ -7,11 +7,11 @@ part_date varchar
 )
 with(partitioned_by = array['part_date']);
 
-delete from hive.dow_jpnew_w.dws_summon_snapshot_di
+delete from hive.mushroom_tw_w.dws_summon_snapshot_di
 where part_date >= $start_date
 and part_date <= $end_date;
 
-insert into hive.dow_jpnew_w.dws_summon_snapshot_di(
+insert into hive.mushroom_tw_w.dws_summon_snapshot_di(
 date, role_id, summon_detail, part_date
 )
 
@@ -28,7 +28,7 @@ vip_level, level, rank,
 payment_itemid as good_id, 
 currency, money, exchange_rate, money_rmb, 
 online_time
-from hive.dow_jpnew_w.dwd_merge_base_live
+from hive.mushroom_tw_w.dwd_merge_base_live
 where part_date >= $start_date
 and part_date <= $end_date
 ), 
@@ -49,7 +49,7 @@ null as unknow_summon,
 null as core_summonvalid, 
 null as item_summonvalid, 
 null as unknow_summonvalid
-from hive.dow_jpnew_r.dwd_gserver_recruitcard_live
+from hive.mushroom_tw_r.dwd_gserver_recruitcard_live
 where part_date >= $start_date
 and part_date <= $end_date
 ), 

@@ -1,7 +1,7 @@
 ###
 -- 【基础信息】
 -- kpi
-create table if not exists hive.dow_jpnew_w.ads_kpi_monthly_mi
+create table if not exists hive.mushroom_tw_w.ads_kpi_monthly_mi
 (month date, 
 zone_id varchar, 
 channel varchar, 
@@ -21,11 +21,11 @@ part_month varchar
 )
 with(partitioned_by = array['part_month']);
 
-delete from hive.dow_jpnew_w.ads_kpi_monthly_mi
+delete from hive.mushroom_tw_w.ads_kpi_monthly_mi
 where part_month >= $start_date
 and part_month <= $end_date;
 
-insert into hive.dow_jpnew_w.ads_kpi_monthly_mi
+insert into hive.mushroom_tw_w.ads_kpi_monthly_mi
 (month, zone_id, channel, os, 
 new_users, active_users, 
 pay_users, new_users_pay, users_new_pay,
@@ -43,7 +43,7 @@ level_min, level_max,
 viplevel_min, viplevel_max,
 exchange_rate, 
 pay_count, money, money_rmb
-from hive.dow_jpnew_w.dws_user_daily_di 
+from hive.mushroom_tw_w.dws_user_daily_di 
 where part_date >= $start_date
 and part_date <= $end_date
 ), 
@@ -74,7 +74,7 @@ b.zone_id, b.channel, b.os,
 date_diff('month', date_trunc('month', b.install_date), a.month) as retention_month,
 date_diff('month', date_trunc('month', b.firstpay_date), a.month) as pay_retention_month
 from user_monthly a
-left join hive.dow_jpnew_w.dws_user_info_di b
+left join hive.mushroom_tw_w.dws_user_info_di b
 on a.role_id = b.role_id
 where b.is_test is null
 ),

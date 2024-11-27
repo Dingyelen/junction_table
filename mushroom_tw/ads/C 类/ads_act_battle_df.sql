@@ -1,6 +1,6 @@
-drop table if exists hive.dow_jpnew_w.ads_act_battle_df;
+drop table if exists hive.mushroom_tw_w.ads_act_battle_df;
 
-create table if not exists hive.dow_jpnew_w.ads_act_battle_df(
+create table if not exists hive.mushroom_tw_w.ads_act_battle_df(
 start_date date, 
 end_date date, 
 act_days bigint, 
@@ -9,15 +9,15 @@ apply_users bigint,
 battle_users bigint
 );
 
-insert into hive.dow_jpnew_w.ads_act_battle_df(
+insert into hive.mushroom_tw_w.ads_act_battle_df(
 start_date, end_date, act_days, active_users, apply_users, battle_users
 )
 
 with user_daily as(
 select a.date, a.part_date, day_of_week(a.date) as weekday, 
 a.role_id, b.huodong_count
-from hive.dow_jpnew_w.dws_user_daily_di a
-left join hive.dow_jpnew_w.dws_user_daily2_di b
+from hive.mushroom_tw_w.dws_user_daily_di a
+left join hive.mushroom_tw_w.dws_user_daily2_di b
 on a.role_id = b.role_id and a.date = b.date
 where a.part_date >= '2023-12-29'
 ), 
@@ -46,7 +46,7 @@ from user_daily
 
 apply_log as(
 select date(event_time) as date, part_date, role_id, 1 as is_apply
-from hive.dow_jpnew_r.dwd_gserver_activityapply_live
+from hive.mushroom_tw_r.dwd_gserver_activityapply_live
 where part_date >= '2023-12-29'
 group by 1, 2, 3, 4
 ), 

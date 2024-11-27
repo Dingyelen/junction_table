@@ -1,6 +1,6 @@
-drop table if exists hive.dow_jpnew_w.dws_server_daily_df;
+drop table if exists hive.mushroom_tw_w.dws_server_daily_df;
 
-create table if not exists hive.dow_jpnew_w.dws_server_daily_df
+create table if not exists hive.mushroom_tw_w.dws_server_daily_df
 (date date,
 zone_id varchar,
 open_date date, 
@@ -41,7 +41,7 @@ transactional = true,
 partitioned_by = array['part_date']
 );
 
-insert into hive.dow_jpnew_w.dws_server_daily_df
+insert into hive.mushroom_tw_w.dws_server_daily_df
 (date, zone_id, open_date, 
 online_time, 
 new_users, active_users, 
@@ -62,7 +62,7 @@ level_min, level_max, viplevel_min, viplevel_max,
 online_time, money, app_money, web_money, 
 money * rate as money_rmb, app_money * rate as app_moneyrmb, web_money * rate as web_moneyrmb, 
 pay_count, app_count, web_count
-from hive.dow_jpnew_w.dws_user_daily_di a
+from hive.mushroom_tw_w.dws_user_daily_di a
 left join mysql_bi_r."gbsp-bi-bigdata".t_currency_rate b
 on a.currency = b.currency and date_format(a.date, '%Y-%m') = b.currency_time 
 ), 
@@ -70,7 +70,7 @@ on a.currency = b.currency and date_format(a.date, '%Y-%m') = b.currency_time
 user_daily_derive as(
 select date, part_date, role_id, 
 is_new, is_firstpay, is_pay, is_paid
-from hive.dow_jpnew_w.dws_user_daily_derive_di
+from hive.mushroom_tw_w.dws_user_daily_derive_di
 ),
 
 user_daily_join as
@@ -84,7 +84,7 @@ a.pay_count, a.app_count, a.web_count
 from user_daily a
 left join user_daily_derive b
 on a.role_id = b.role_id and a.part_date = b.part_date
-left join hive.dow_jpnew_w.dws_user_info_di z
+left join hive.mushroom_tw_w.dws_user_info_di z
 on a.role_id = z.role_id
 where z.is_test is null
 ),

@@ -1,9 +1,9 @@
 ###
 -- 【基础信息】
 -- kpi
-drop table if exists hive.dow_jpnew_w.ads_kpi_hourly_hf;
+drop table if exists hive.mushroom_tw_w.ads_kpi_hourly_hf;
 
-create table if not exists hive.dow_jpnew_w.ads_kpi_hourly_hf
+create table if not exists hive.mushroom_tw_w.ads_kpi_hourly_hf
 (date date,
 hour timestamp,
 zone_id varchar,
@@ -29,7 +29,7 @@ part_date varchar
 )
 with(partitioned_by = array['part_date']);
 
-insert into hive.dow_jpnew_w.ads_kpi_hourly_hf
+insert into hive.mushroom_tw_w.ads_kpi_hourly_hf
 (date, hour, zone_id, channel, os, 
 dau, paycount_daily, money_daily, newuser_lasthour, dau_lasthour, money_lasthour,  
 new_users, active_users_error, active_users, 
@@ -41,7 +41,7 @@ with user_hourly as
 (select date, part_date, hour, 
 date_format(hour, '%H') as hour_pure, 
 role_id, pay_count, money, last_event
-from hive.dow_jpnew_w.dws_user_hourly_hi
+from hive.mushroom_tw_w.dws_user_hourly_hi
 where part_date >= cast(date_add('month', -6, date(current_date)) as varchar)
 and part_date <= cast(current_date as varchar)
 ),
@@ -55,7 +55,7 @@ b.zone_id, b.channel, b.os,
 date_diff('hour', date_trunc('hour', b.install_ts), a.hour) as retention_hour,
 date_diff('hour', date_trunc('hour', b.firstpay_ts), a.hour) as pay_retention_hour
 from user_hourly a
-left join hive.dow_jpnew_w.dws_user_info_di b
+left join hive.mushroom_tw_w.dws_user_info_di b
 on a.role_id = b.role_id
 where b.is_test is null
 ),

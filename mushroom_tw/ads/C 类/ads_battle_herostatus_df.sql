@@ -1,6 +1,6 @@
-drop table if exists hive.dow_jpnew_w.ads_battle_herostatus_df;
+drop table if exists hive.mushroom_tw_w.ads_battle_herostatus_df;
 
-create table if not exists hive.dow_jpnew_w.ads_battle_herostatus_df(
+create table if not exists hive.mushroom_tw_w.ads_battle_herostatus_df(
 zone_id varchar,
 vip_level bigint, 
 hero_status array(varchar),
@@ -8,7 +8,7 @@ users bigint,
 pvp_count bigint
 );
 
-insert into hive.dow_jpnew_w.ads_battle_herostatus_df
+insert into hive.mushroom_tw_w.ads_battle_herostatus_df
 (zone_id, vip_level, hero_status, users, pvp_count)
 
 with data_log as(
@@ -21,7 +21,7 @@ opponent_uid,
 score_change, rank_change, battle_result, 
 team1_status, team3_status, team2_status, 
 oppoteam1_status, oppoteam2_status, oppoteam3_status, aiteam1
-from hive.dow_jpnew_r.dwd_gserver_3v3battleinfo_live
+from hive.mushroom_tw_r.dwd_gserver_3v3battleinfo_live
 where part_date >= date_format(date_add('day', -15, date($end_date)), '%Y-%m-%d')
 and part_date <= $end_date
 ), 
@@ -47,7 +47,7 @@ select date, part_date, role_id, zone_id, vip_level, event_time, team_status, rn
 a.hero_id, b.hero_cn, 
 concat(a.hero_id, '_', b.hero_cn) as hero_status
 from team_hero_res a
-left join hive.dow_jpnew_w.dim_gserver_levelup_heroid b
+left join hive.mushroom_tw_w.dim_gserver_levelup_heroid b
 on a.hero_id = b.hero_id
 ), 
 

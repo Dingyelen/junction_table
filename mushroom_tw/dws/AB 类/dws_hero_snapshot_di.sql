@@ -1,4 +1,4 @@
-create table if not exists hive.dow_jpnew_w.dws_hero_snapshot_di(
+create table if not exists hive.mushroom_tw_w.dws_hero_snapshot_di(
 date date, 
 role_id varchar, 
 hero_id varchar, 
@@ -10,11 +10,11 @@ part_date varchar
 )
 with(partitioned_by = array['part_date']);
 
-delete from hive.dow_jpnew_w.dws_hero_snapshot_di
+delete from hive.mushroom_tw_w.dws_hero_snapshot_di
 where part_date >= $start_date
 and part_date <= $end_date;
 
-insert into hive.dow_jpnew_w.dws_hero_snapshot_di(
+insert into hive.mushroom_tw_w.dws_hero_snapshot_di(
 date, role_id, hero_id, hero_level, hero_star, chip_cost, upgrade_count, part_date
 )
 
@@ -27,10 +27,10 @@ vip_level, level, rank_level,
 cast(hero as varchar) as hero_id, 
 cast(substring(cast(fromrare as varchar), 3, 1) as bigint) as hero_star, 
 costchip as chip_cost, remainchip as chip_end, newskill as new_skill
-from hive.dow_jpnew_r.dwd_gserver_upgraderare_live
+from hive.mushroom_tw_r.dwd_gserver_upgraderare_live
 where role_id in 
 (select distinct role_id 
-from hive.dow_jpnew_r.dwd_gserver_upgraderare_live 
+from hive.mushroom_tw_r.dwd_gserver_upgraderare_live 
 where part_date >= $start_date
 and  part_date <= $end_date)
 ), 
@@ -52,10 +52,10 @@ zone_id, alliance_id,
 vip_level, level, rank_level, 
 cast(hero as varchar) as hero_id, 
 fromlv as original_level, tolv as hero_level
-from hive.dow_jpnew_r.dwd_gserver_upgradehero_live
+from hive.mushroom_tw_r.dwd_gserver_upgradehero_live
 where role_id in 
 (select distinct role_id 
-from hive.dow_jpnew_r.dwd_gserver_upgradehero_live 
+from hive.mushroom_tw_r.dwd_gserver_upgradehero_live 
 where part_date >= $start_date
 and part_date <= $end_date)
 ), 

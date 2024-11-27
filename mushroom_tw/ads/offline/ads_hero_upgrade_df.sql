@@ -1,6 +1,6 @@
-drop table if exists hive.dow_jpnew_w.ads_hero_upgrade_df;
+drop table if exists hive.mushroom_tw_w.ads_hero_upgrade_df;
 
-create table if not exists hive.dow_jpnew_w.ads_hero_upgrade_df(
+create table if not exists hive.mushroom_tw_w.ads_hero_upgrade_df(
 hero_id varchar,
 zone_id varchar,
 start_date date,
@@ -12,7 +12,7 @@ upgrade_count bigint,
 chip_cost bigint
 );
 
-insert into hive.dow_jpnew_w.ads_hero_upgrade_df
+insert into hive.mushroom_tw_w.ads_hero_upgrade_df
 (hero_id, zone_id, start_date, active_users, hero_star, 
 hold_users, upgrade_users, upgrade_count, chip_cost)
 
@@ -27,7 +27,7 @@ fromrare as original_level, torare as target_level,
 cast(substring(cast(fromrare as varchar), 3, 1) as bigint) as hero_star, 
 cast(substring(cast(torare as varchar), 3, 1) as bigint) as target_star, 
 costchip as chip_cost, remainchip as chip_end, newskill as new_skill
-from hive.dow_jpnew_r.dwd_gserver_upgraderare_live
+from hive.mushroom_tw_r.dwd_gserver_upgraderare_live
 where part_date >= date_format(date_add('day', -15, date($end_date)), '%Y-%m-%d')
 and part_date <= $end_date
 ), 
@@ -44,7 +44,7 @@ group by 1, 2, 3
 role_info as(
 select role_id, cast(hero_id as varchar) as hero_id, cast(zone_id as varchar) as zone_id, 
 max(herostar) as hero_star
-from hive.dow_jpnew_r.dwd_gserver_herosnap_live
+from hive.mushroom_tw_r.dwd_gserver_herosnap_live
 where part_date >= date_format(date_add('day', -15, date($end_date)), '%Y-%m-%d')
 and part_date <= $end_date
 group by 1, 2, 3
@@ -60,14 +60,14 @@ group by 1, 2, 3
 hero_info as(
 select cast(hero_id as varchar) as hero_id, cast(zone_id as varchar) as zone_id, 
 min(date(event_time)) as start_date 
-from hive.dow_jpnew_r.dwd_gserver_herosnap_live
+from hive.mushroom_tw_r.dwd_gserver_herosnap_live
 group by 1, 2
 ), 
 
 daily_agg as(
 select b.zone_id, count(distinct a.role_id) as active_users
-from hive.dow_jpnew_w.dws_user_daily_di a
-left join hive.dow_jpnew_w.dws_user_info_di b
+from hive.mushroom_tw_w.dws_user_daily_di a
+left join hive.mushroom_tw_w.dws_user_info_di b
 on a.role_id = b.role_id
 where part_date >= date_format(date_add('day', -15, date($end_date)), '%Y-%m-%d')
 and part_date <= $end_date

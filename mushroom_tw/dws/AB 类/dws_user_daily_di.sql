@@ -1,5 +1,5 @@
 ###
-create table if not exists hive.dow_jpnew_w.dws_user_daily_di(
+create table if not exists hive.mushroom_tw_w.dws_user_daily_di(
 date date, 
 role_id varchar, 
 device_id varchar, 
@@ -64,11 +64,11 @@ part_date varchar
 )
 with(partitioned_by = array['part_date']);
 
-delete from hive.dow_jpnew_w.dws_user_daily_di 
+delete from hive.mushroom_tw_w.dws_user_daily_di 
 where part_date >= $start_date
 and part_date <= $end_date;
 
-insert into  hive.dow_jpnew_w.dws_user_daily_di
+insert into  hive.mushroom_tw_w.dws_user_daily_di
 (date, role_id, device_id, open_id, adid, 
 app_id, channel, zone_id, alliance_id, 
 os, ip, country, 
@@ -94,14 +94,13 @@ with base_log as(
 select part_date, event_name, event_time, 
 date(event_time) as date, 
 role_id, open_id, adid, device_id, 
-channel, zone_id, alliance_id,  
-'dow_jp' as app_id, 
+channel, zone_id, alliance_id, app_id, 
 vip_level, level, rank_level, power, 
-pay_source, payment_itemid, currency, money, 
+null as pay_source, null as payment_itemid, null as currency, cast(null as double) as money, 
 online_time, 
 row_number() over(partition by role_id, part_date, event_name order by event_time) as partevent_rn, 
 row_number() over(partition by role_id, part_date, event_name order by event_time desc) as partevent_descrn
-from hive.dow_jpnew_r.dwd_merge_base_live
+from hive.mushroom_tw_r.dwd_merge_base_live
 where part_date >= $start_date
 and part_date <= $end_date
 ), 
@@ -111,21 +110,19 @@ select part_date, event_name, event_time,
 date(event_time) as date, 
 role_id, open_id, adid, 
 zone_id, alliance_id, 
-'dow_jp' as app_id, 
 vip_level, level, rank_level, 
 reason, event_type, 
 coalesce(free_num, 0) as free_num, coalesce(paid_num, 0) as paid_num, 
 coalesce(free_end, 0) as free_end, coalesce(paid_end, 0) as paid_end
-from hive.dow_jpnew_r.dwd_gserver_corechange_live
+from hive.mushroom_tw_r.dwd_gserver_corechange_live
 where part_date >= $start_date
-and part_date <= $end_date
-and reason != '638'
+and part_date <= $end_date 
 ), 
 
 core_log as(
 select part_date, event_name, event_time, 
 role_id, open_id, adid, 
-zone_id, alliance_id, app_id, 
+zone_id, alliance_id, 
 vip_level, level, rank_level, reason, 
 (case when event_type = 'gain' then free_num else null end) as free_add, 
 (case when event_type = 'gain' then paid_num else null end) as paid_add, 
@@ -142,21 +139,19 @@ select part_date, event_name, event_time,
 date(event_time) as date, 
 role_id, open_id, adid, 
 zone_id, alliance_id, 
-'dow_jp' as app_id, 
 vip_level, level, rank_level, 
 reason, event_type, 
 item_id, item_num, item_end
-from hive.dow_jpnew_r.dwd_gserver_itemchange_live
+from hive.mushroom_tw_r.dwd_gserver_itemchange_live
 where part_date >= $start_date
-and part_date <= $end_date
-and reason != '638'
+and part_date <= $end_date 
 and item_id = '2'
 ), 
 
 item_log as(
 select part_date, event_name, event_time, 
 role_id, open_id, adid, 
-zone_id, alliance_id, app_id, 
+zone_id, alliance_id, 
 vip_level, level, rank_level, reason, 
 (case when event_type = 'gain' then item_num else null end) as sincetimes_add, 
 (case when event_type = 'cost' then item_num else null end) as sincetimes_cost, 
@@ -174,13 +169,13 @@ campaign_name as campaign,
 creative_name as creative, 
 adgroup_name as adgroup, 
 campaign_id, creative_id, adgroup_id 
-from hive.dow_jpnew_r.dwd_adjust_live
+from hive.mushroom_tw_r.dwd_adjust_live
 where part_date >= $start_date
 and part_date <= $end_date
 ), 
 
 daily_gserver_info as(
-select part_date, date, role_id, app_id, 
+select part_date, date, role_id, 
 min(event_time) as first_ts,
 max(event_time) as last_ts,
 min(vip_level) as viplevel_min,
@@ -197,7 +192,7 @@ sum(case when event_name = 'Payment' and pay_source = 'web' then 1 else null end
 sum(case when event_name = 'rolelogin' then 1 else null end) as login_times, 
 sum(online_time) as online_time
 from base_log
-group by 1, 2, 3, 4
+group by 1, 2, 3
 ), 
 
 daily_payment_cal as(
@@ -229,6 +224,7 @@ from daily_payment_detail
 
 daily_gserver_first_info as(
 select distinct part_date, role_id, 
+first_value(app_id) ignore nulls over(partition by role_id, part_date order by event_time rows between unbounded preceding and unbounded following) as app_id, 
 first_value(device_id) ignore nulls over(partition by role_id, part_date order by event_time rows between unbounded preceding and unbounded following) as device_id, 
 first_value(open_id) ignore nulls over(partition by role_id, part_date order by event_time rows between unbounded preceding and unbounded following) as open_id, 
 first_value(channel) ignore nulls over(partition by role_id, part_date order by event_time rows between unbounded preceding and unbounded following) as channel, 
@@ -314,14 +310,14 @@ and partevent_descrn = 1
 test_info as(
 select distinct role_id, 
 1 as is_test
-from hive.dow_jpnew_w.dim_gserver_base_roleid
+from hive.mushroom_tw_w.dim_gserver_base_roleid
 ), 
 
 daily_info as(
 select 
 a.date, 
 a.role_id, c.device_id, c.open_id, f.adid, 
-a.app_id, c.channel, c.zone_id, c.alliance_id, 
+c.app_id, c.channel, c.zone_id, c.alliance_id, 
 f.os, f.ip, f.country, 
 f.network, f.campaign, f.creative, f.adgroup, 
 f.campaign_id, f.creative_id, f.adgroup_id, 

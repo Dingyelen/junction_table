@@ -1,5 +1,5 @@
 ###
-create table if not exists hive.dow_jpnew_w.dws_core_snapshot_di(
+create table if not exists hive.mushroom_tw_w.dws_core_snapshot_di(
 date date, 
 role_id varchar, 
 coreadd_detail varchar, 
@@ -13,11 +13,11 @@ part_date varchar
 )
 with(partitioned_by = array['part_date']);
 
-delete from hive.dow_jpnew_w.dws_core_snapshot_di
+delete from hive.mushroom_tw_w.dws_core_snapshot_di
 where part_date >= $start_date
 and part_date <= $end_date;
 
-insert into hive.dow_jpnew_w.dws_core_snapshot_di(
+insert into hive.mushroom_tw_w.dws_core_snapshot_di(
 date, role_id, 
 coreadd_detail, freeadd_detail, paidadd_detail, 
 corecost_detail, freecost_detail, paidcost_detail, 
@@ -28,13 +28,10 @@ with base_log as(
 select part_date, event_name, event_time, 
 date(event_time) as date, 
 role_id, open_id, adid, device_id, 
-channel, zone_id, alliance_id,  
-'dow_jp' as app_id, 
+channel, zone_id, alliance_id, app_id, 
 vip_level, level, rank_level, power, 
-payment_itemid, currency, money, online_time, 
-row_number() over(partition by role_id, part_date, event_name order by event_time) as partevent_rn, 
-row_number() over(partition by role_id, part_date, event_name order by event_time desc) as partevent_descrn
-from hive.dow_jpnew_r.dwd_merge_base_live
+payment_itemid, currency, money, online_time
+from hive.mushroom_tw_r.dwd_merge_base_live
 where part_date >= $start_date
 and part_date <= $end_date
 ), 
@@ -44,21 +41,19 @@ select part_date, event_name, event_time,
 date(event_time) as date, 
 role_id, open_id, adid, 
 zone_id, alliance_id, 
-'dow_jp' as app_id, 
 vip_level, level, rank_level, 
 reason, event_type, 
 coalesce(free_num, 0) as free_num, coalesce(paid_num, 0) as paid_num, 
 coalesce(free_end, 0) as free_end, coalesce(paid_end, 0) as paid_end
-from hive.dow_jpnew_r.dwd_gserver_corechange_live
+from hive.mushroom_tw_r.dwd_gserver_corechange_live
 where part_date >= $start_date
 and part_date <= $end_date
-and reason != '638'
 ), 
 
 core_log as(
 select part_date, event_name, event_time, 
 role_id, open_id, adid, 
-zone_id, alliance_id, app_id, 
+zone_id, alliance_id, 
 vip_level, level, rank_level, reason, 
 (case when event_type = 'gain' then free_num else null end) as free_add, 
 (case when event_type = 'gain' then paid_num else null end) as paid_add, 

@@ -1,5 +1,5 @@
 ###
-create table if not exists hive.dow_jpnew_w.dws_flag_snapshot_di(
+create table if not exists hive.mushroom_tw_w.dws_flag_snapshot_di(
 date date, 
 role_id varchar, 
 flag_detail array(varchar), 
@@ -7,11 +7,11 @@ part_date varchar
 )
 with(partitioned_by = array['part_date']);
 
-delete from hive.dow_jpnew_w.dws_flag_snapshot_di
+delete from hive.mushroom_tw_w.dws_flag_snapshot_di
 where part_date >= $start_date
 and part_date <= $end_date;
 
-insert into hive.dow_jpnew_w.dws_flag_snapshot_di(
+insert into hive.mushroom_tw_w.dws_flag_snapshot_di(
 date, role_id, flag_detail, part_date
 )
 
@@ -27,7 +27,7 @@ vip_level, level, rank,
 payment_itemid as good_id, 
 currency, money, exchange_rate, money_rmb, 
 online_time
-from hive.dow_jpnew_r.dwd_merge_base_live
+from hive.mushroom_tw_r.dwd_merge_base_live
 where part_date >= $start_date
 and part_date <= $end_date
 ), 
@@ -40,7 +40,7 @@ zone_id, guild_id as alliance_id,
 vip_level, level, rank, 
 flag_id, flag_level, 
 flag_star, flag_starran, flag_awake
-from hive.dow_jpnew_r.dwd_gserver_herosnap_live
+from hive.mushroom_tw_r.dwd_gserver_herosnap_live
 where part_date >= $start_date
 and part_date <= $end_date
 and flag_id != 0

@@ -1,5 +1,5 @@
 ###
-create table if not exists hive.dow_jpnew_w.dws_user_daily_derive_di(
+create table if not exists hive.mushroom_tw_w.dws_user_daily_derive_di(
 date date, 
 role_id varchar, 
 login_days bigint, 
@@ -22,9 +22,9 @@ with(
 partitioned_by = array['part_date']
 );
 
-delete from hive.dow_jpnew_w.dws_user_daily_derive_di where part_date >= $start_date and part_date <= $end_date;
+delete from hive.mushroom_tw_w.dws_user_daily_derive_di where part_date >= $start_date and part_date <= $end_date;
 
-insert into hive.dow_jpnew_w.dws_user_daily_derive_di(
+insert into hive.mushroom_tw_w.dws_user_daily_derive_di(
 date, role_id, login_days, 
 is_new, is_firstpay, is_pay, is_paid, 
 money_ac, appmoney_ac, webmoney_ac, 
@@ -34,7 +34,7 @@ before_date, after_date, part_date
 
 with active_role as(
 select distinct role_id
-from hive.dow_jpnew_w.dws_user_daily_di
+from hive.mushroom_tw_w.dws_user_daily_di
 where part_date >= $start_date 
 and part_date <= $end_date
 ), 
@@ -45,7 +45,7 @@ row_number() over(partition by role_id order by part_date) as login_days,
 firstpay_ts, money, app_money, web_money, 
 sincetimes_end, core_end, free_end, paid_end, 
 part_date
-from hive.dow_jpnew_w.dws_user_daily_di a
+from hive.mushroom_tw_w.dws_user_daily_di a
 where exists
 (select 1 from active_role b
 where a.role_id = b.role_id)

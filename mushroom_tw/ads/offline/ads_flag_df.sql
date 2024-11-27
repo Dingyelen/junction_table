@@ -1,6 +1,6 @@
-drop table if exists hive.dow_jpnew_w.ads_flag_df;
+drop table if exists hive.mushroom_tw_w.ads_flag_df;
 
-create table if not exists hive.dow_jpnew_w.ads_flag_df(
+create table if not exists hive.mushroom_tw_w.ads_flag_df(
 role_id varchar, 
 flag_level bigint, 
 flag_star bigint, 
@@ -9,14 +9,14 @@ flag_id varchar
 ) 
 with(partitioned_by = array['flag_id']);
 
-insert into hive.dow_jpnew_w.ads_flag_df
+insert into hive.mushroom_tw_w.ads_flag_df
 (role_id, 
 flag_level, flag_star, flag_awake, 
 flag_id)
 
 with dws_log as(
 select date, role_id, flag_detail, part_date
-from hive.dow_jpnew_w.dws_flag_snapshot_di
+from hive.mushroom_tw_w.dws_flag_snapshot_di
 ),
 
 dws_unnest as(

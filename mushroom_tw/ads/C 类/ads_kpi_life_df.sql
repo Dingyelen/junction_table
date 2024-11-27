@@ -1,6 +1,6 @@
-drop table if exists hive.dow_jpnew_w.ads_kpi_life_df;
+drop table if exists hive.mushroom_tw_w.ads_kpi_life_df;
 
-create table if not exists hive.dow_jpnew_w.ads_kpi_life_df
+create table if not exists hive.mushroom_tw_w.ads_kpi_life_df
 (date date,
 zone_id varchar, 
 channel varchar, 
@@ -11,7 +11,7 @@ part_date varchar
 )
 with(partitioned_by = array['part_date']);
 
-insert into hive.dow_jpnew_w.ads_kpi_life_df
+insert into hive.mushroom_tw_w.ads_kpi_life_df
 (date, zone_id, channel, os,
 money_ac, newusers_ac, 
 part_date)
@@ -19,13 +19,13 @@ part_date)
 with user_daily as(
 select 
 date, part_date, role_id, money
-from hive.dow_jpnew_w.dws_user_daily_di
+from hive.mushroom_tw_w.dws_user_daily_di
 ), 
 
 new_user as(
 select install_date, zone_id, channel, os, 
 count(distinct role_id) as new_users
-from hive.dow_jpnew_w.dws_user_info_di 
+from hive.mushroom_tw_w.dws_user_info_di 
 group by 1, 2, 3, 4
 ), 
 
@@ -46,7 +46,7 @@ date_diff('day', b.install_date, a.date) as retention_day,
 date_diff('day', b.firstpay_date, a.date) as pay_retention_day,
 date_diff('day', b.install_date, b.firstpay_date) as firstpay_interval_days
 from user_daily a
-left join hive.dow_jpnew_w.dws_user_info_di b
+left join hive.mushroom_tw_w.dws_user_info_di b
 on a.role_id = b.role_id
 where b.is_test is null
 ),

@@ -1,5 +1,5 @@
 ###
-create table if not exists hive.dow_jpnew_w.dws_user_hourly_hi
+create table if not exists hive.mushroom_tw_w.dws_user_hourly_hi
 (date date,
 hour timestamp,
 role_id varchar,
@@ -17,11 +17,11 @@ part_date varchar
 )
 with(partitioned_by = array['part_date']);
 
-delete from hive.dow_jpnew_w.dws_user_hourly_hi 
+delete from hive.mushroom_tw_w.dws_user_hourly_hi 
 where part_date >= $start_date
 and part_date <= $end_date;
 
-insert into  hive.dow_jpnew_w.dws_user_hourly_hi
+insert into  hive.mushroom_tw_w.dws_user_hourly_hi
 (date, hour, role_id, zone_id, channel, 
 money, app_money, web_money, 
 pay_count, app_count, web_count, 
@@ -31,12 +31,10 @@ with base_log as(
 select part_date, event_name, event_time, 
 date(event_time) as date, 
 role_id, open_id, adid, device_id, 
-channel, zone_id, alliance_id,  
-'dow_jp' as app_id, 
+channel, zone_id, alliance_id, app_id, 
 vip_level, level, rank_level, power, 
-pay_source, payment_itemid, currency, 
-money, online_time
-from hive.dow_jpnew_r.dwd_merge_base_live
+null as pay_source, null as payment_itemid, null as currency, cast(null as double) as money, online_time
+from hive.mushroom_tw_r.dwd_merge_base_live
 where part_date >= $start_date
 and part_date <= $end_date
 ), 
@@ -63,6 +61,5 @@ select date, hour, role_id, zone_id, channel,
 money, app_money, web_money, 
 pay_count, app_count, web_count, 
 events, last_event, part_date
-from daily_gserver_info
-;
+from daily_gserver_info;
 ###

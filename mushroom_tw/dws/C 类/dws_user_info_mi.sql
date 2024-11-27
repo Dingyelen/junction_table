@@ -1,5 +1,5 @@
 ###
-create table if not exists hive.dow_jpnew_w.dws_user_info_mi(
+create table if not exists hive.mushroom_tw_w.dws_user_info_mi(
 month date, 
 role_id varchar, 
 is_test bigint, 
@@ -13,9 +13,9 @@ part_month varchar
 )
 with(partitioned_by = array['part_month']);
 
-delete from hive.dow_jpnew_w.dws_user_info_mi where part_month >= $start_date and part_month <= $end_date;
+delete from hive.mushroom_tw_w.dws_user_info_mi where part_month >= $start_date and part_month <= $end_date;
 
-insert into hive.dow_jpnew_w.dws_user_info_mi(
+insert into hive.mushroom_tw_w.dws_user_info_mi(
 month, role_id, 
 is_test, 
 login_days, online_time, login_times, 
@@ -24,7 +24,7 @@ part_month)
 
 with user_daily as(
 select *, date_trunc('month', date) as month
-from hive.dow_jpnew_w.dws_user_daily_di
+from hive.mushroom_tw_w.dws_user_daily_di
 where part_date >= $start_date
 and  part_date <= $end_date
 ), 

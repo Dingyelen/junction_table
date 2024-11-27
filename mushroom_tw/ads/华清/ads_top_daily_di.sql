@@ -1,4 +1,4 @@
-create table if not exists hive.dow_jpnew_w.ads_top_daily_di
+create table if not exists hive.mushroom_tw_w.ads_top_daily_di
 (date date,
 role_id varchar,
 zone_id varchar,
@@ -15,9 +15,9 @@ part_date varchar
 )
 with(partitioned_by = array['part_date']);
 
-delete from hive.dow_jpnew_w.ads_top_daily_di where part_date >= $start_date and part_date <= $end_date;
+delete from hive.mushroom_tw_w.ads_top_daily_di where part_date >= $start_date and part_date <= $end_date;
 
-insert into hive.dow_jpnew_w.ads_top_daily_di
+insert into hive.mushroom_tw_w.ads_top_daily_di
 (date, role_id, zone_id, 
 channel, install_date, lastlogin_date, 
 level_max, viplevel_max, 
@@ -30,7 +30,7 @@ date, part_date, role_id,
 level_min, level_max,
 viplevel_min, viplevel_max, 
 online_time, pay_count, money, app_money, web_money
-from hive.dow_jpnew_w.dws_user_daily_di 
+from hive.mushroom_tw_w.dws_user_daily_di 
 where part_date >= date_format(date_add('day', -7, date $start_date), '%Y-%m-%d')
 and part_date <= $end_date
 ), 
@@ -48,9 +48,9 @@ c.firstpay_date, c.firstpay_goodid, c.firstpay_level,
 c.zone_id, c.channel, c.os, 
 rank() over(partition by a.date order by money desc) as pay_rank
 from user_daily a
-left join hive.dow_jpnew_w.dws_user_daily_derive_di b
+left join hive.mushroom_tw_w.dws_user_daily_derive_di b
 on a.role_id = b.role_id and a.part_date = b.part_date
-left join hive.dow_jpnew_w.dws_user_info_di c
+left join hive.mushroom_tw_w.dws_user_info_di c
 on a.role_id = c.role_id
 where c.is_test is null
 ), 

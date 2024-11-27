@@ -1,6 +1,6 @@
-drop table if exists hive.dow_jpnew_w.dws_token_monthly_mf;
+drop table if exists hive.mushroom_tw_w.dws_token_monthly_mf;
 
-create table if not exists hive.dow_jpnew_w.dws_token_monthly_mf(
+create table if not exists hive.mushroom_tw_w.dws_token_monthly_mf(
 cal_month date,
 money_rmb decimal(32, 4),
 users bigint,
@@ -15,7 +15,7 @@ price decimal(32, 4),
 diff bigint
 );
 
-insert into hive.dow_jpnew_w.dws_token_monthly_mf(
+insert into hive.mushroom_tw_w.dws_token_monthly_mf(
 cal_month, money_rmb, users,
 pay_users, token_users, token_get_by_pay,
 token_get, token_cost, token_remain, 
@@ -36,7 +36,7 @@ a.currency, money, b.exchange_rate,
 cast(money * b.exchange_rate * 0.01 as decimal(32, 4)) money_rmb,
 cast(split_part(payment_itemid, ';', 2) as bigint) as token_num,
 part_date
-from hive.dow_jpnew_r.dwd_gserver_payment_live a
+from hive.mushroom_tw_r.dwd_gserver_payment_live a
 left join currency_rate b
 on date_format(a.event_time, '%Y-%m') = b.currency_time 
 where part_date >= '2024-05-01' and part_date <= cast(current_date as varchar)
@@ -62,7 +62,7 @@ a.currency, money, b.exchange_rate,
 cast(money * b.exchange_rate / 100 as decimal(32, 4)) money_rmb,
 c.token_num,
 part_date
-from hive.dow_jpnew_r.dwd_gserver_payment_live a
+from hive.mushroom_tw_r.dwd_gserver_payment_live a
 left join currency_rate b
 on date_format(a.event_time, '%Y-%m') = b.currency_time 
 left join good_config_app c
@@ -95,7 +95,7 @@ reason, reason_id, reason_subid,
 item_id, item_num as change_num,
 item_end as change_after,
 part_date
-from hive.dow_jpnew_r.dwd_gserver_itemchange_live
+from hive.mushroom_tw_r.dwd_gserver_itemchange_live
 where part_date >= '2024-05-01' and part_date <= cast(current_date as varchar)
 and item_id = '2'
 and reason !='638'

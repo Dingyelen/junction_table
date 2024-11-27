@@ -1,18 +1,18 @@
-drop table if exists hive.dow_jpnew_w.ads_artifact_df;
+drop table if exists hive.mushroom_tw_w.ads_artifact_df;
 
-create table if not exists hive.dow_jpnew_w.ads_artifact_df(
+create table if not exists hive.mushroom_tw_w.ads_artifact_df(
 role_id varchar, 
 artifact_level bigint, 
 artifact_id varchar
 ) 
 with(partitioned_by = array['artifact_id']);
 
-insert into hive.dow_jpnew_w.ads_artifact_df
+insert into hive.mushroom_tw_w.ads_artifact_df
 (role_id, artifact_level, artifact_id)
 
 with dws_log as(
 select date, role_id, artifact1_detail, artifact2_detail, part_date
-from hive.dow_jpnew_w.dws_artifact_snapshot_di
+from hive.mushroom_tw_w.dws_artifact_snapshot_di
 ),
 
 dws_unnest as(

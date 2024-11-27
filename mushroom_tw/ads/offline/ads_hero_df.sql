@@ -1,6 +1,6 @@
-drop table if exists hive.dow_jpnew_w.ads_hero_df;
+drop table if exists hive.mushroom_tw_w.ads_hero_df;
 
-create table if not exists hive.dow_jpnew_w.ads_hero_df(
+create table if not exists hive.mushroom_tw_w.ads_hero_df(
 role_id varchar, 
 hero_level bigint, 
 hero_power bigint, 
@@ -9,14 +9,14 @@ hero_id varchar
 ) 
 with(partitioned_by = array['hero_id']);
 
-insert into hive.dow_jpnew_w.ads_hero_df
+insert into hive.mushroom_tw_w.ads_hero_df
 (role_id, 
 hero_level, hero_power, hero_star, 
 hero_id)
 
 with dws_log as(
 select date, role_id, hero_detail, part_date
-from hive.dow_jpnew_w.dws_hero_snapshot_di
+from hive.mushroom_tw_w.dws_hero_snapshot_di
 ),
 
 dws_unnest as(

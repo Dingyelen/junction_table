@@ -1,5 +1,5 @@
 ###
-create table if not exists hive.dow_jpnew_w.dws_artifact_snapshot_di(
+create table if not exists hive.mushroom_tw_w.dws_artifact_snapshot_di(
 date date, 
 role_id varchar, 
 artifact1_detail array(varchar), 
@@ -8,11 +8,11 @@ part_date varchar
 )
 with(partitioned_by = array['part_date']);
 
-delete from hive.dow_jpnew_w.dws_artifact_snapshot_di
+delete from hive.mushroom_tw_w.dws_artifact_snapshot_di
 where part_date >= $start_date
 and part_date <= $end_date;
 
-insert into hive.dow_jpnew_w.dws_artifact_snapshot_di(
+insert into hive.mushroom_tw_w.dws_artifact_snapshot_di(
 date, role_id, artifact1_detail, artifact2_detail, part_date
 )
 
@@ -28,7 +28,7 @@ vip_level, level, rank,
 payment_itemid as good_id, 
 currency, money, exchange_rate, money_rmb, 
 online_time
-from hive.dow_jpnew_r.dwd_merge_base_live
+from hive.mushroom_tw_r.dwd_merge_base_live
 where part_date >= $start_date
 and part_date <= $end_date
 ), 
@@ -41,7 +41,7 @@ zone_id, guild_id as alliance_id,
 vip_level, level, rank, 
 artifact1_id, artifact1_level, 
 artifact2_id, artifact2_level
-from hive.dow_jpnew_r.dwd_gserver_herosnap_live
+from hive.mushroom_tw_r.dwd_gserver_herosnap_live
 where part_date >= $start_date
 and part_date <= $end_date
 and (artifact1_id != 0 or artifact2_id != 0)

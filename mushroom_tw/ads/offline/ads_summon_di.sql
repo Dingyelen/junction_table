@@ -1,4 +1,4 @@
-create table if not exists hive.dow_jpnew_w.ads_summon_di(
+create table if not exists hive.mushroom_tw_w.ads_summon_di(
 date date, 
 dau bigint,  
 summon_id varchar, 
@@ -13,11 +13,11 @@ part_date varchar
 ) 
 with(partitioned_by = array['part_date']);
 
-delete from hive.dow_jpnew_w.ads_summon_di
+delete from hive.mushroom_tw_w.ads_summon_di
 where part_date >= $start_date
 and part_date <= $end_date;
 
-insert into hive.dow_jpnew_w.ads_summon_di
+insert into hive.mushroom_tw_w.ads_summon_di
 (date, dau, 
 summon_id, currency_id, 
 users, currency_num, summon_free, summon_valid, 
@@ -25,8 +25,8 @@ summon_continue, summon_count, part_date)
 
 with dws_log as(
 select a.date, a.role_id, summon_detail, part_date
-from hive.dow_jpnew_w.dws_summon_snapshot_di a
-left join hive.dow_jpnew_w.dws_user_info_di b
+from hive.mushroom_tw_w.dws_summon_snapshot_di a
+left join hive.mushroom_tw_w.dws_user_info_di b
 on a.role_id = b.role_id
 where part_date>=$start_date
 and part_date<=$end_date

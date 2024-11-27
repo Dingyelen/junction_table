@@ -1,4 +1,4 @@
-create table if not exists hive.dow_jpnew_w.dws_summon_daily_di(
+create table if not exists hive.mushroom_tw_w.dws_summon_daily_di(
 date date, 
 start_date date, 
 zone_id varchar, 
@@ -18,14 +18,14 @@ transactional = true,
 partitioned_by = array['part_date']
 );
 
-delete from hive.dow_jpnew_w.dws_summon_daily_di
+delete from hive.mushroom_tw_w.dws_summon_daily_di
 where summon_id in (
 select distinct cast(recruitid as varchar) as summon_id 
-from hive.dow_jpnew_r.dwd_gserver_recruitcard_live
+from hive.mushroom_tw_r.dwd_gserver_recruitcard_live
 where part_date >= $start_date
 and part_date <= $end_date);
 
-insert into  hive.dow_jpnew_w.dws_summon_daily_di
+insert into  hive.mushroom_tw_w.dws_summon_daily_di
 (date, start_date, zone_id, 
 summon_free, summon_valid, summon_count, summon_continue, summon_users, core_cost, 
 retention_day, part_date, summon_id)
@@ -39,10 +39,10 @@ vip_level, level, rank_level,
 cast(recruitid as varchar) as summon_id, 
 count as summon_count, 
 free as is_free, costid as currency_id, costcount as currency_num
-from hive.dow_jpnew_r.dwd_gserver_recruitcard_live
+from hive.mushroom_tw_r.dwd_gserver_recruitcard_live
 where recruitid in (
 select distinct recruitid
-from hive.dow_jpnew_r.dwd_gserver_recruitcard_live
+from hive.mushroom_tw_r.dwd_gserver_recruitcard_live
 where part_date >= $start_date
 and part_date <= $end_date)
 ), 

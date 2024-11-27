@@ -2,7 +2,7 @@
 * @Author: dingyelen
 * @Date:   2024-10-16 17:13:44
 * @Last Modified by:   dingyelen
-* @Last Modified time: 2024-11-26 18:08:17
+* @Last Modified time: 2024-11-27 09:55:41
 */
 
 
@@ -11,7 +11,7 @@
 -- kpi
 -- 本报表 money_ac 和 newuser_ac 为全服不是活跃
 
-create table if not exists hive.dow_jpnew_w.ads_kpi_daily_di
+create table if not exists hive.mushroom_tw_w.ads_kpi_daily_di
 (date date, 
 zone_id varchar, 
 channel varchar, 
@@ -37,11 +37,11 @@ part_date varchar
 )
 with(partitioned_by = array['part_date']);
 
-delete from hive.dow_jpnew_w.ads_kpi_daily_di
+delete from hive.mushroom_tw_w.ads_kpi_daily_di
 where part_date >= $start_date
 and part_date <= $end_date;
 
-insert into hive.dow_jpnew_w.ads_kpi_daily_di
+insert into hive.mushroom_tw_w.ads_kpi_daily_di
 (date, zone_id, channel, 
 active_users, online_time, 
 new_users, newuser_ac, 
@@ -54,7 +54,7 @@ select date, part_date, role_id,
 level_min, level_max, viplevel_min, viplevel_max, 
 online_time, money, web_money, app_money, 
 pay_count, web_count, app_count
-from hive.dow_jpnew_w.dws_user_daily_di 
+from hive.mushroom_tw_w.dws_user_daily_di 
 where part_date <= $end_date
 ), 
 
@@ -70,9 +70,9 @@ date_diff('day', c.install_date, a.date) as retention_day,
 date_diff('day', c.firstpay_date, a.date) as pay_retention_day,
 date_diff('day', c.install_date, firstpay_date) as firstpay_interval_days
 from user_daily a
-left join hive.dow_jpnew_w.dws_user_daily_derive_di b
+left join hive.mushroom_tw_w.dws_user_daily_derive_di b
 on a.role_id = b.role_id and a.part_date = b.part_date
-left join hive.dow_jpnew_w.dws_user_info_di c
+left join hive.mushroom_tw_w.dws_user_info_di c
 on a.role_id = c.role_id
 where c.is_test is null
 ),
@@ -98,7 +98,7 @@ group by 1, 2, 3, 4
 -- 历史新增人数
 his_new as(
 select distinct zone_id, channel
-from hive.dow_jpnew_w.dws_user_info_di
+from hive.mushroom_tw_w.dws_user_info_di
 ), 
 
 -- open_date 填写开服日期
