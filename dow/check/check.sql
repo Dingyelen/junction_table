@@ -2,7 +2,7 @@
 * @Author: dingyelen
 * @Date:   2024-11-20 10:25:48
 * @Last Modified by:   dingyelen
-* @Last Modified time: 2024-11-26 11:21:50
+* @Last Modified time: 2024-11-27 17:46:03
 */
 
 -- 4. dws_user_daily_di
@@ -308,6 +308,7 @@ select a.part_date, coalesce(a.users, 0)- coalesce(b.users, 0)
 from base_log a 
 left join check_data b
 on a.part_date = b.part_date
+where coalesce(a.users, 0) != coalesce(b.users, 0)
 
 -- 13. ads_user_retention_di
 -- 13.1 验证近 30 日新增用户是否与 user_info 一致
@@ -329,6 +330,7 @@ select a.install_date, abs(coalesce(a.users, 0) - coalesce(b.users, 0))
 from base_log a 
 left join check_data b
 on a.install_date = b.date
+where coalesce(a.users, 0) != coalesce(b.users, 0)
 
 -- 14. ads_kpi_daily_di
 -- 14.1 验证近 30 日每日付费金额是否与 user_daily 一致
@@ -389,6 +391,7 @@ with base_log as(
 select part_date, count(distinct role_id) as users       
 from hive.dow_jpnew_w.dws_user_daily_di
 where part_date >= date_format(date_add('day', -30, current_date), '%Y-%m-%d')
+and part_date < date_format(current_date, '%Y-%m-%d')
 and is_test is null
 group by 1),
 
@@ -396,18 +399,21 @@ check_data as(
 select part_date, sum(dau) as users
 from hive.dow_jpnew_w.ads_kpi_hourly_hi
 where part_date >= date_format(date_add('day', -30, current_date), '%Y-%m-%d')
+and part_date < date_format(current_date, '%Y-%m-%d')
 group by 1)
 
-select a.part_date, abs(a.users- b.users)
+select a.part_date, abs(coalesce(a.users, 0)- coalesce(b.users, 0))
 from base_log a 
 left join check_data b
-on a.part_date = b.part_date;
+on a.part_date = b.part_date
+where coalesce(a.users, 0) != coalesce(b.users, 0);
 
 -- 15.2 验证近 30 日付费金额是否与 user_daily 一致
 with base_log as(
 select part_date, sum(money) as money    
 from hive.dow_jpnew_w.dws_user_daily_di
 where part_date >= date_format(date_add('day', -30, current_date), '%Y-%m-%d')
+and part_date < date_format(current_date, '%Y-%m-%d')
 and is_test is null
 group by 1),
 
@@ -415,18 +421,21 @@ check_data as(
 select part_date, sum(money_hourly) as money
 from hive.dow_jpnew_w.ads_kpi_hourly_hi
 where part_date >= date_format(date_add('day', -30, current_date), '%Y-%m-%d')
+and part_date < date_format(current_date, '%Y-%m-%d')
 group by 1)
 
-select a.part_date, abs(a.money - b.money)
+select a.part_date, abs(coalesce(a.money, 0) - coalesce(b.money, 0))
 from base_log a 
 left join check_data b
-on a.part_date = b.part_date;
+on a.part_date = b.part_date
+where coalesce(a.money, 0) != coalesce(b.money, 0);
 
 -- 15.3 验证近 30 日新增用户是否与 user_info 一致
 with base_log as(
 select cast(install_date as varchar) as install_date, count(distinct role_id) as new_users
 from hive.dow_jpnew_w.dws_user_info_di
 where install_date >= date_add('day', -30, current_date)
+and install_date < current_date
 and is_test is null
 group by 1),
 
@@ -434,9 +443,11 @@ check_data as(
 select part_date, sum(new_users) as new_users    
 from hive.dow_jpnew_w.ads_kpi_hourly_hi
 where part_date >= date_format(date_add('day', -30, current_date), '%Y-%m-%d')
+and part_date < date_format(current_date, '%Y-%m-%d')
 group by 1)
 
-select a.install_date, abs(a.new_users - b.new_users)
+select a.install_date, abs(coalesce(a.new_users, 0) - coalesce(b.new_users, 0))
 from base_log a 
 left join check_data b
-on a.install_date = b.part_date;
+on a.install_date = b.part_date
+where coalesce(a.new_users, 0) != coalesce(b.new_users, 0);

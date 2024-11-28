@@ -135,7 +135,8 @@ sum(b.new_users) over (partition by a.zone_id, a.channel, a.os, a.date order by 
 sum(b.money) over (partition by a.zone_id, a.channel, a.os, a.date order by a.hour rows between unbounded preceding and current row) as money_ac
 from data_cube a
 left join hourly_info b
-on a.hour = b.hour
+on a.date = b.date
+and a.hour = b.hour
 and a.zone_id = b.zone_id 
 and a.channel = b.channel
 and a.os = b.os
