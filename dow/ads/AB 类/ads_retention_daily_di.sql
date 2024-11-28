@@ -40,10 +40,15 @@ on a.role_id = b.role_id
 where b.is_test is null
 ), 
 
+data_cube_select as(
+select distinct date, part_date, role_id,
+from user_daily_join
+), 
+
 data_cube as(
 select distinct date, part_date, active_date, role_id, 
 date_diff('day', date, active_date) as retention_day
-from user_daily_join
+from data_cube_select
 cross join unnest(filter(sequence(date, date_add('day', 14, date), interval '1' day), x -> x <= current_date)) as t(active_date)
 ), 
 

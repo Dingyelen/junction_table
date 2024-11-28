@@ -2,7 +2,7 @@
 * @Author: dingyelen
 * @Date:   2024-11-20 10:25:48
 * @Last Modified by:   dingyelen
-* @Last Modified time: 2024-11-27 17:46:03
+* @Last Modified time: 2024-11-28 10:35:48
 */
 
 -- 4. dws_user_daily_di
@@ -451,3 +451,26 @@ from base_log a
 left join check_data b
 on a.install_date = b.part_date
 where coalesce(a.new_users, 0) != coalesce(b.new_users, 0);
+
+-- 16. ads_kpi_hourly_hf
+-- 16.1 验证近 30 日每日金额是否一致
+with base_log as(
+select part_date, sum(money) as money    
+from hive.dow_jpnew_w.dws_user_daily_di
+where part_date >= date_format(date_add('day', -30, current_date), '%Y-%m-%d')
+and part_date < date_format(current_date, '%Y-%m-%d')
+and is_test is null
+group by 1),
+
+check_data as(
+select part_date, sum(money) as money
+from hive.dow_jpnew_w.ads_kpi_hourly_hf
+where part_date >= date_format(date_add('day', -30, current_date), '%Y-%m-%d')
+and part_date < date_format(current_date, '%Y-%m-%d')
+group by 1)
+
+select a.part_date, coalesce(a.money, 0), abs(coalesce(a.money, 0) - coalesce(b.money, 0))
+from base_log a 
+left join check_data b
+on a.part_date = b.part_date
+where coalesce(a.money, 0) != coalesce(b.money, 0);
