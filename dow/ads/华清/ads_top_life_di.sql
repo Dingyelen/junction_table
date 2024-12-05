@@ -47,7 +47,7 @@ a.pay_count, a.money, a.web_money, b.money_ac, b.is_new,
 c.install_date, date(c.lastlogin_ts) as lastlogin_date, date(c.lastpay_ts) as lastpay_date, 
 c.firstpay_date, c.firstpay_goodid, c.firstpay_level,
 c.zone_id, c.channel, c.os, 
-rank() over(partition by a.date order by b.money_ac desc) as pay_rank
+rank() over(partition by a.date order by b.money_ac desc, a.level_max desc) as pay_rank
 from user_daily a
 left join hive.dow_jpnew_w.dws_user_daily_derive_di b
 on a.role_id = b.role_id and a.part_date = b.part_date
