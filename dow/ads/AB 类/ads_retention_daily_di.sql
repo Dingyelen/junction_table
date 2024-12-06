@@ -41,7 +41,7 @@ where b.is_test is null
 ), 
 
 data_cube_select as(
-select distinct date, part_date, role_id,
+select distinct date, part_date, role_id
 from user_daily_join
 ), 
 
