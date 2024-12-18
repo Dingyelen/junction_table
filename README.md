@@ -72,12 +72,17 @@ pass
 
 |必要性|表名|依赖情况|分区|
 |--------|--------|--------|--------|
-|A类|ads_kpi_hourly_hi|dws_user_hourly_hi，dws_user_info_di|part_date|
 |A类|ads_core_addreason_di|dws_core_snapshot_di，dws_user_info_di|part_date|
 |A类|ads_core_costreason_di|dws_core_snapshot_di，dws_user_info_di|part_date|
 |A类|ads_retention_daily_di|dws_user_daily_di，dws_user_info_di|part_date|
 |A类|ads_user_retention_di|dws_user_daily_di，dws_user_info_di||
 |A类|ads_active_daily_di|dws_user_daily_di，dws_user_info_di|part_date|
+|B类|ads_kpi_server_df|dws_server_daily_df||
+|华清|ads_kpi_daily_di|dws_user_daily_di，dws_user_info_di|part_date|
+|华清|ads_kpi_hourly_hf|dws_user_hourly_hi|part_date|
+|华清|ads_kpi_hourly_hi|dws_user_hourly_hi|part_date|
+|华清|ads_top_daily_di|dws_user_daily_di，dws_user_info_di|part_date|
+|华清|ads_top_life_di|dws_user_daily_di，dws_user_info_di|part_date|
 
 ## 3.4 更新时间表
 pass
@@ -89,7 +94,7 @@ pass
 2. 规划项目所需报表，并构思更为合理的更新时间
 3. 检查表名，根据数据库表名规范，以及更新时间确定
   1. 通用大数据规范-对应分析
-4. 上传白名单，dim_testusers
-5. 完成 DWS 、ADS 层 A类 表代码改写，根据游戏特性挑选非必选代码改写
+4. 上传配置表，如白名单、道具表等
+5. 完成 DWS 、ADS 层 AB类 表代码改写，根据游戏特性挑选非必选代码改写
 6. 协调@杨德贵 完成历史数据
 7. 根据数据依赖情况和血缘（参考2），结合实际情况错峰部署各表更新时间
