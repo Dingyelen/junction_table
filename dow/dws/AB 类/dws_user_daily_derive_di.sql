@@ -76,7 +76,7 @@ select date, role_id, login_days,
 money_ac, appmoney_ac, webmoney_ac, 
 sincetimes_end, core_end, free_end, paid_end, 
 lag(date, 1, install_date) over(partition by role_id order by date) as before_date,
-lead(date, 1, current_date) over(partition by role_id order by date) as after_date, 
+lead(date, 1, null) over(partition by role_id order by date) as after_date, 
 part_date
 from daily_cal
 )
