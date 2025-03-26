@@ -1,6 +1,6 @@
-drop table if exists hive.dow_jpnew_w.dws_token_info_mf;
+drop table if exists hive.mushroom2_tw_w.dws_token_info_mf;
 
-create table if not exists hive.dow_jpnew_w.dws_token_info_mf(
+create table if not exists hive.mushroom2_tw_w.dws_token_info_mf(
 cal_month date,
 role_id varchar, 
 money decimal(32, 4),
@@ -12,7 +12,7 @@ token_end_lastmonth bigint,
 price decimal(32, 4)
 );
 
-insert into hive.dow_jpnew_w.dws_token_info_mf(
+insert into hive.mushroom2_tw_w.dws_token_info_mf(
 cal_month, role_id, 
 money, token_get_by_pay,
 token_get, token_cost, token_end, token_end_lastmonth, price
@@ -24,7 +24,7 @@ date(event_time) as date,
 date_trunc('month', date(event_time)) as month, 
 role_id, payment_itemid, 
 currency, money, cast(split_part(payment_itemid, ';', 2) as bigint) as token_num, part_date
-from hive.dow_jpnew_r.dwd_gserver_payment_live
+from hive.mushroom2_tw_r.dwd_gserver_payment_live
 where part_date >= '2024-05-01' and part_date <= cast(current_date as varchar)
 and pay_source = 'web'
 ),
@@ -46,7 +46,7 @@ date(event_time) as date,
 date_trunc('month', date(event_time)) as month, 
 role_id, a.payment_itemid, 
 a.currency, money, c.token_num, part_date
-from hive.dow_jpnew_r.dwd_gserver_payment_live a
+from hive.mushroom2_tw_r.dwd_gserver_payment_live a
 left join good_config_app c
 on a.payment_itemid = c.payment_itemid
 where part_date >= '2024-05-01' and part_date <= cast(current_date as varchar)
@@ -77,7 +77,7 @@ reason, reason_id, reason_subid,
 item_id, item_num, item_end as token_end, 
 row_number() over (partition by role_id, date_trunc('month', date(event_time)) order by event_time desc, item_end) as rn, 
 part_date
-from hive.dow_jpnew_r.dwd_gserver_itemchange_live
+from hive.mushroom2_tw_r.dwd_gserver_itemchange_live
 where part_date >= '2024-05-01' and part_date <= cast(current_date as varchar)
 and item_id = '2'
 and reason !='638'
@@ -133,6 +133,6 @@ on a.cal_month = c.month and a.role_id = c.role_id
 select cal_month, role_id, 
 money, token_get_by_pay,
 token_get, token_cost, token_end, 
-lag(token_end, 1) over (partition by role_id order by cal_month) as token_end_lastmonth,
-money*1.000000000 / (token_get + lag(token_end, 1, 0) over (partition by role_id order by cal_month)) as price
+lag(token_end, 1) over (order by cal_month) as token_end_lastmonth,
+money / (token_get + lag(token_end, 1, 0) over (order by cal_month)) as price
 from user_month_info
