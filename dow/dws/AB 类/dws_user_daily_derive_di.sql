@@ -22,7 +22,7 @@ with(
 partitioned_by = array['part_date']
 );
 
-delete from hive.dow_jpnew_w.dws_user_daily_derive_di where part_date >= $start_date and part_date <= $end_date;
+delete from hive.dow_jpnew_w.dws_user_daily_derive_di where part_date >= date_format(date_add('day', -30, date($start_date)), '%Y-%m-%d') and part_date <= $end_date;
 
 insert into hive.dow_jpnew_w.dws_user_daily_derive_di(
 date, role_id, login_days, 
@@ -35,7 +35,7 @@ before_date, after_date, part_date
 with active_role as(
 select distinct role_id
 from hive.dow_jpnew_w.dws_user_daily_di
-where part_date >= $start_date 
+where part_date >= date_format(date_add('day', -30, date($start_date)), '%Y-%m-%d') 
 and part_date <= $end_date
 ), 
 
@@ -88,6 +88,6 @@ money_ac, appmoney_ac, webmoney_ac,
 sincetimes_end, core_end, free_end, paid_end, 
 before_date, after_date, part_date
 from daily_boolean_cal
-where part_date >= $start_date
+where part_date >= date_format(date_add('day', -30, date($start_date)), '%Y-%m-%d')
 and part_date <= $end_date
 ###
